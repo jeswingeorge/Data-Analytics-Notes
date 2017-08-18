@@ -1,0 +1,68 @@
+<myles_tutorials>
+  <node id="358262851" lat="42.2114684" lon="-71.6951052" version="3" timestamp="2014-11-09T18:31:13Z" changeset="26670811" uid="360392" user="maxerickson">
+    <tag k="addr:city" v="Grafton"/>
+    <tag k="addr:housenumber" v="24"/>
+    <tag k="addr:postcode" v="01519"/>
+    <tag k="addr:street" v="Providence Road"/>
+    <tag k="amenity" v="school"/>
+    <tag k="name" v="Grafton High School"/>
+    <tag k="phone" v="508-839-5425"/>
+    <tag k="website" v="http://grafton.ghs.schoolfusion.us/"/>
+  </node>
+  <node id="3709766308" lat="42.1986330" lon="-71.5894340" version="1" timestamp="2015-08-22T19:33:12Z" changeset="33512327" uid="452630" user="sfn"/>
+<way id="29701077" version="9" timestamp="2015-06-02T20:04:41Z" changeset="31675842" uid="2644389" user="LinusA">
+    <nd ref="327957708"/>
+    <nd ref="327966151"/>
+    <nd ref="326662699"/>
+    <nd ref="2183016553"/>
+    <nd ref="2183016551"/>
+    <nd ref="2183016549"/>
+    <nd ref="2183016547"/>
+    <nd ref="2183016548"/>
+    <nd ref="326633780"/>
+    <nd ref="326655949"/>
+    <nd ref="3381673747"/>
+    <nd ref="3381673748"/>
+    <nd ref="3381673749"/>
+    <nd ref="3381673750"/>
+    <nd ref="327055865"/>
+    <nd ref="3479944852"/>
+    <nd ref="2183016538"/>
+    <nd ref="3479944851"/>
+    <nd ref="3381673751"/>
+    <nd ref="2183016533"/>
+    <nd ref="2183016532"/>
+    <nd ref="3381673753"/>
+    <nd ref="3381673752"/>
+    <nd ref="2183016531"/>
+    <nd ref="2183016529"/>
+    <nd ref="327055733"/>
+    <nd ref="2183016539"/>
+    <nd ref="3398120592"/>
+    <nd ref="326667951"/>
+    <nd ref="326627104"/>
+    <nd ref="3566998643"/>
+    <nd ref="326620747"/>
+    <nd ref="3381673746"/>
+    <nd ref="327957708"/>
+    <tag k="access" v="yes"/>
+    <tag k="addr:city" v="Shrewsbury"/>
+    <tag k="addr:housenumber" v="15"/>
+    <tag k="addr:postcode" v="01545"/>
+    <tag k="addr:state" v="MA"/>
+    <tag k="addr:street" v="Church Road"/>
+    <tag k="amenity" v="grave_yard"/>
+    <tag k="area" v="yes"/>
+    <tag k="ele" v="208"/>
+    <tag k="gnis:county_id" v="027"/>
+    <tag k="gnis:created" v="08/27/2002"/>
+    <tag k="gnis:feature_id" v="601784"/>
+    <tag k="gnis:state_id" v="25"/>
+    <tag k="historical" v="yes"/>
+    <tag k="landuse" v="cemetery"/>
+    <tag k="name" v="Mountain View Cemetery"/>
+    <tag k="owner" v="Town Of Shrewsbury"/>
+    <tag k="phone" v="+1 508 841 8503"/>
+    <tag k="website" v="http://shrewsbury-ma.gov/department/?fDD=30-0"/>
+  </way>
+</myles_tutorials>
