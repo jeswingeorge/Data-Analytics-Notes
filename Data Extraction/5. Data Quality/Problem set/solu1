@@ -1,0 +1,31 @@
+def audit_file(filename, fields):
+    fieldtypes = {}
+    
+    for fieldtype in fields: 
+        fieldtypes[fieldtype] = set()
+        
+    with open(filename, "r") as raw: 
+        data = csv.DictReader(raw)
+        
+        for i in range(3):
+            next(data)
+                
+        for line in data:
+            for field in fields: 
+                if line[field] == "NULL" or line[field] == "": 
+                    fieldtypes[field].add(type(None)) 
+                elif line[field].startswith("{"): 
+                    fieldtypes[field].add(type([]))
+                else:
+                    try: 
+                        int(line[field])
+                        fieldtypes[field].add(type(3))
+                    except:
+                        try:
+                            float(line[field])
+                            fieldtypes[field].add(type(1.1))                          
+                        except: 
+                            fieldtypes[field].add(type("str"))
+
+        
+    return fieldtypes 
