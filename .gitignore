@@ -1,2 +1,10 @@
+<<<<<<< HEAD
 .ipynb_checkpoints
 autos.csv
+||||||| merged common ancestors
+.ipynb_checkpoints
+=======
+.ipynb_checkpoints
+cities.csv
+autos.csv
+>>>>>>> pandas
