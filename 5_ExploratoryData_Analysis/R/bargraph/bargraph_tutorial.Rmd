@@ -1,0 +1,139 @@
+---
+title: "Barplot R"
+author: "Jeswin"
+date: "13 September 2017"
+output: html_document
+---
+__Learnt from : __ [programmiz](https://www.programiz.com/r-programming/bar-plot)
+
+# Plotting bargraphs in R
+
+Bar plots created in R using the barplot() function. We can supply a vector or matrix to this function.
+
+If we supply a __vector__, the plot will have bars with their heights equal to the elements in the vector.
+Eg : suppose, we have a vector of maximum temperatures (in degree Celsius) for seven days
+
+
+```{r}
+temp_7_days <- c(22,25,24,20,28,30,27)
+
+# To make a bar plot out of this data.
+barplot(temp_7_days)
+
+```
+
+
+This function can take a lot of argument to control the way our data is plotted. Check in the help section '?barplot'.
+
+Some of the frequently used ones are, 'main' to give the title, 'xlab' and 'ylab' to provide labels for the axes, 'names.arg' for naming each bar, 'col' to define color etc.
+
+We can also plot bars horizontally by providing the argument 'horiz = TRUE'.
+
+
+```{r pressure, echo=TRUE}
+
+# barchart with added parameters
+
+barplot(temp_7_days,
+  main = "Maximum Temperatures in a Week",
+  xlab = "Degree Celsius",
+  ylab = "Day",
+  names.arg = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"),
+  col = "darkred",
+  horiz = TRUE)
+
+```
+
+In the R-chunk for image '{r pressure, echo=TRUE}' was used.
+Note that if the `echo = FALSE` parameter was added to the code chunk, then the R code that generated the plot won,t have been shown up in the HTML output file.
+
+
+## Plotting Categorical Data
+Sometimes we have to plot the count of each item as bar plots from categorical data. For example, here is a vector of age of 10 college freshmen.
+
+```{r}
+age <- c(17,18,18,17,18,19,18,16,18,18)
+```
+
+Simply doing 'barplot(age)' will not give us the required plot. It will plot 10 bars with height equal to the student's age. But we want to know the number of student in each age category.
+
+This count can be quickly found using the 'table()' function, as shown below.
+```{r}
+table(age)
+```
+
+Now plotting this data will give our required bar plot. Note below, that we define the argument 'density' to shade the bars.
+
+```{r}
+barplot(table(age),
+        main = 'Age Count of 10 students',
+        xlab = 'Age',
+        ylab = 'Count',
+        border = 'red',
+        col = 'blue',
+        density = 50)
+```
+
+## How to plot higher dimensional tables? Eg : 1
+### Contingency Tables
+
+Consider the following matrix which shows the realtionship between gender and which handed they are.
+
+__Observe__ : How the contingency table has been made.
+```{r}
+mytable = matrix(c(43, 9, 52 , 44, 4, 48, 87, 13, 100), 
+                 nrow = 3, ncol=3, byrow = TRUE,
+                 dimnames = list(c("MALE", "FEMALE", "TOTAL"), c("Right-Handed", "Left-Handed", "TOTAL")))
+
+mytable
+```
+This data is plotted as follows.
+```{r}
+barplot(mytable,
+        main = "People and their handedness",
+        xlab = "People",
+        ylab = "Count",
+        col = c("red", "green", "yellow")
+        )
+
+legend("center", 
+       c("MALE", "FEMALE", "TOTAL"),
+       fill = c("red", "green", "yellow"))
+```
+
+## How to plot higher dimensional tables? Eg : 2
+ 
+On passing the argument 'beside  = TRUE' the columns are portrayed as juxtaposed bars or seperate bars within a group.
+ 
+ 
+```{r}
+barplot(mytable,
+        main = "People and their handedness",
+        xlab = "People",
+        ylab = "Count",
+        col = c("red", "green", "blue")
+        )
+
+legend("center", 
+       c("MALE", "FEMALE", "TOTAL"),
+       fill = c("red", "green", "blue"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
