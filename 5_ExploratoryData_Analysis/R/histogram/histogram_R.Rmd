@@ -1,0 +1,138 @@
+---
+title: "R Histogram using hist() function"
+author: "Jeswin"
+date: "14 September 2017"
+output: html_document
+---
+
+Reference : [Programmiz](https://www.programiz.com/r-programming/histogram)
+
+To create histograms in R using the hist() function.This function takes in a vector of values for which the histogram is plotted.
+Let us use the built-in dataset 'airquality' which has Daily air quality measurements in New York, May to September 1973.-R documentation.
+
+
+
+```{r}
+str(airquality)
+```
+
+Use the temperature parameter which has 154 observations in degree Fahrenheit.
+
+## Example 1: Simple histogram
+
+```{r}
+Temperature <- airquality$Temp
+hist(Temperature)
+```
+
+We can see above that there are 9 cells with equally spaced breaks. In this case, the height of a cell is equal to the number of observation falling in that cell.
+
+We can pass in additional parameters to control the way our plot looks. You can read about them in the help section '?hist'.
+
+Some of the frequently used ones are, 'main' to give the title, 'xlab' and 'ylab' to provide labels for the axes, 'xlim' and 'ylim' to provide range of the axes, 'col' to define color etc.
+
+Additionally, with the argument 'freq=FALSE' we can get the probability distribution instead of the frequency.
+
+## Example 2: Histogram with added parameters
+
+```{r}
+hist(Temperature,
+     main = "Maximum daily temperature at La Guardia Airport",
+     xlab = "Temperature in degrees Fahrenheit",
+     xlim = c(50,100),
+     col = "darkmagenta",
+     freq = FALSE
+     )
+
+```
+
+Note that the y axis is labelled density instead of frequency. In this case, the total area of the histogram is equal to 1.
+
+## Return Value of hist()
+
+The hist() function returns a list with 6 components.
+
+```{r}
+h <- hist(Temperature)
+h
+```
+
+We see that an object of class histogram is returned which has:
+
+- 'breaks' - places where the breaks occur.
+- 'counts' - the number of observations falling in that cell,
+- 'density'- the density of cells,
+- 'mids'   - the midpoints of cells,
+- 'xname'  - the x argument name and
+- 'equidist' - a logical value indicating if the breaks are equally spaced or not.
+
+We can use these values for further processing.
+
+For example, in the following example we __use the return values to place the counts on top of each cell__ using the 'text()' function.
+
+'text(x,y,lables="", adj = c())' 
+Where,
+- 'x, y'   - numeric vectors of coordinates where the text labels should be written.
+- 'labels' - a character vector or expression specifying the text to be written
+- 'adj'    - one or two values in [0, 1] which specify the x (and optionally y) adjustment of the labels. On most devices values outside that interval will also work.
+
+
+## Example 3: Use Histogram return values for labels using text()
+
+```{r}
+h <- hist(Temperature,
+          ylim = c(0,40),
+          col = "green"
+          )
+text(h$mids, h$counts, labels = h$counts, adj=c(0.5, -0.5))
+```
+
+## Defining the Number of Breaks
+
+With the 'breaks' argument we can specify the number of cells we want in the histogram. However, this number is just a suggestion.
+
+R calculates the best number of cells, keeping this suggestion in mind. Following are two histograms on the same data with different number of cells.
+
+## Example 4: Histogram with different breaks
+
+```{r}
+hist(Temperature, breaks=4, main="With breaks=4")
+```
+
+```{r}
+hist(Temperature, breaks=20, main="With breaks=20")
+```
+
+In the above figure we see that the actual number of cells plotted is greater than we had specified.
+
+We can also define breakpoints between the cells as a vector. This makes it possible to plot a histogram with unequal intervals. In such case, the area of the cell is proportional to the number of observations falling inside that cell.
+
+## Example 5: Histogram with manual breaks
+
+```{r}
+hist(Temperature,
+     main = "Maximum daily temperature at La Guardia Airport",
+     xlab="Temperature in degrees Fahrenheit",
+     xlim=c(50,100),
+     col="chocolate",
+     border="black",
+     breaks = c(55,60,65,70,75,80,85,90,100)
+     )
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
