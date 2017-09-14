@@ -1,0 +1,124 @@
+---
+title: "Facets(ggplot2)"
+author: "Jeswin"
+date: "14 September 2017"
+output: html_document
+---
+
+Reference : [Cookbook for R](http://www.cookbook-r.com/Graphs/Facets_(ggplot2)/)
+
+Sample data : We will use the tips dataset from the 'reshape2' package.
+
+```{r}
+library(reshape2)
+# Look at first few rows
+head(tips)
+```
+
+The point geom is used to create scatterplots. The scatterplot is most useful for displaying the relationship between two continuous variables. It can be used to compare one continuous and one categorical variable, or two categorical variables, but a variation like 'geom_jitter', 'geom_count', or 'geom_bin2d' is usually more appropriate.
+
+This is a scatterplot of the tip percentage by total bill size.
+
+```{r}
+library(ggplot2)
+sp <- ggplot(tips, aes(x=total_bill, y=tip/total_bill)) + geom_point(shape=1)
+sp
+```
+
+## facet_grid
+
+The data can be split up by one or two variables that vary on the horizontal and/or vertical direction.
+
+This is done by giving a formula to facet_grid(), of the form vertical ~ horizontal.
+
+```{r}
+# Divide by levels of "sex", in the vertical direction
+
+sp + facet_grid(sex ~ .)
+
+```
+
+```{r}
+# Divide by levels of "sex", in the horizontal direction
+sp + facet_grid(. ~ sex)
+```
+
+```{r}
+# Divide with "sex" vertical, "day" horizontal
+sp + facet_grid(sex ~day)
+
+```
+
+## facet_wrap
+Instead of faceting with a variable in the horizontal or vertical direction, facets can be placed next to each other, wrapping with a certain number of columns or rows. The label for each plot will be at the top of the plot.
+
+```{r}
+# Divide by day, going horizontally and wrapping with 2 columns
+sp + facet_wrap( ~ day, ncol = 2)
+```
+
+## Modifying facet label appearance
+
+```{r}
+sp + facet_grid(sex ~ day) +
+  theme(strip.text.x = element_text(size = 8, angle = 10),
+        strip.text.y = element_text(size = 12, face = "bold"),
+        strip.background = element_rect(colour = "red", fill = "#CCCCFF"))
+```
+
+## Modifying facet label text
+
+There are a few different ways of modifying facet labels. The simplest way is to provide a named vector that maps original names to new names. To map the levels of 'sex' from Female==>Women, and Male==>Men:
+
+```{r}
+labels <- c(Female = "Women", Male = "Men")
+sp + facet_grid(. ~ sex, labeller = labeller(sex = labels))
+
+
+```
+
+Another way is to modify the data frame so that the data contains the desired labels:
+
+```{r}
+tips2 <- tips
+levels(tips2$sex)[levels(tips2$sex)=="Female"] <- "Women"
+levels(tips2$sex)[levels(tips2$sex)=="Male"]   <- "Men"
+head(tips2)
+```
+
+Both of these will give the same result:
+
+```{r}
+sp2 <- ggplot(tips2, aes(x=total_bill, y=tip/total_bill)) + geom_point(shape=1)
+sp2 + facet_grid(. ~ sex)
+```
+
+
+'labeller()' can use any function that takes a character vector as input and returns a character vector as output. For example, the 'capitalize' function from the Hmisc package will capitalize the first letters of strings. We can also define our own custom functions, like this one, which reverses strings:
+
+Remaining topics to study :
+Reference : [Cookbook for R](http://www.cookbook-r.com/Graphs/Facets_(ggplot2)/)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
