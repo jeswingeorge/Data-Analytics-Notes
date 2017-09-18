@@ -96,6 +96,29 @@ sp2 + facet_grid(. ~ sex)
 
 'labeller()' can use any function that takes a character vector as input and returns a character vector as output. For example, the 'capitalize' function from the Hmisc package will capitalize the first letters of strings. We can also define our own custom functions, like this one, which reverses strings:
 
+
+## Free scales
+
+Normally, the axis scales on each graph are fixed, which means that they have the same size and range. They can be made independent, by setting scales to 'free', 'free_x', or 'free_y'.
+
+```{r}
+# A histogram of bill sizes
+hp <- ggplot(tips, aes(x=total_bill)) + geom_histogram(binwidth = 2, colour='white' )
+
+# Histogram of total_bill, divided by sex and smoker
+hp + facet_grid(sex ~ smoker)
+
+# Same as above, with scales="free_y"
+hp + facet_grid(sex ~ smoker, scales = "free_y")
+
+#  With panels that have the same scaling, but different range (and therefore different physical sizes)
+hp + facet_grid(sex ~ smoker, scales = "free", space = "free")
+
+
+```
+
+
+
 Remaining topics to study :
 Reference : [Cookbook for R](http://www.cookbook-r.com/Graphs/Facets_(ggplot2)/)
 
