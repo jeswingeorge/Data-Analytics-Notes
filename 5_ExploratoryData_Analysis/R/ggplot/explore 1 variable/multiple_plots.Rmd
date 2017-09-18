@@ -1,0 +1,23 @@
+---
+title: "Multiple plots in one graph using gridExtra"
+author: "Jeswin"
+date: "16 September 2017"
+output: html_document
+---
+library(ggplot2)
+library(grid)
+
+# define individual plots
+
+p1 <- ggplot(aes(displ, hwy), data = mpg) + geom_point() +
+scale_x_log10(xlim = "log x to the base 10")
+
+
+
+p2 <- ggplot(aes(displ, hwy/2), data = mpg) + geom_point()
+p3 <- ggplot(aes(displ, hwy/3), data = mpg) + geom_point()
+p4 <- ggplot(aes(displ, hwy/4), data = mpg) + geom_point()
+
+# arrange plots in grid
+grid.arrange(p1, p2, p3, p4, ncol=2)
+
