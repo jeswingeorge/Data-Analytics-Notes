@@ -1,0 +1,100 @@
+---
+title: "Creating a new Dataframe from an existing one"
+author: "Jeswin"
+date: "21 September 2017"
+output: html_document
+---
+
+## Loading libraries
+
+```{r}
+library(ggplot2)
+data(diamonds)
+summary(diamonds)
+```
+
+
+```{r}
+head(diamonds)
+```
+
+
+
+#1: Create data frame with selected columns using column indices
+
+```{r}
+# Displays column carat, cut, depth
+dfnew1 <- diamonds[,c(1,2,5)]
+head(dfnew1)
+```
+
+
+
+#2: Create data frame with selected columns using column indices with sequences
+```{r}
+# Displays column carat, cut, color, depth, price, x
+dfnew2 <- diamonds[, c(1:3, 5, 7:8)]
+head(dfnew2)
+```
+
+
+#3: Create data frame with selected columns using data.frame command
+
+```{r}
+# Displays column carat, cut, color
+dfnew3 <- data.frame(diamonds$carat, diamonds$cut, diamonds$color)
+names(dfnew3) <- c("Carat", "Cut", "Color")
+head(dfnew3)
+```
+
+
+#4: Create data frame using selected columns and column names
+
+```{r}
+# Displays column carat, depth, price
+dfnew4 <- diamonds[,c("carat", "depth", "price")]
+head(dfnew4)
+```
+
+
+
+#5: Create data frame using subset command and column names
+```{r}
+# Displays column color, carat, price
+dfnew5 <- subset(diamonds, select=c("color", "carat", "price"))
+head(dfnew5)
+```
+
+
+
+#6: Create data frame using subset command and column indices
+
+```{r}
+# Displays column carat, cut, color, depth
+dfnew6 <- subset(diamonds, select=c(1:3, 5))
+head(dfnew6)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
