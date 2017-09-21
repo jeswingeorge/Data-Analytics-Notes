@@ -1,0 +1,357 @@
+Lesson 4 : Explore Two variables 
+========================================================
+
+***
+```{r}
+#pf <- read.csv("pseudo_facebook.tsv", sep = '\t')
+
+pf <- read.delim("pseudo_facebook.tsv")
+names(pf)
+```
+
+
+### Loading libraries
+
+```{r}
+library(ggplot2)
+```
+
+***
+
+### Scatterplots
+Notes:
+
+```{r Scatterplots}
+# Using qplot 
+# qplot(x = age, y = friend_count, data = pf)
+
+# qplot can also be used for scatterplot without labelling x and y but just using position
+# qplot(age, friend_count, data = pf)
+
+# Using ggplot
+
+ggplot(data = pf, aes(x = age, y = friend_count)) +
+  geom_point()
+  
+```
+
+***
+
+#### What are some things that you notice right away?
+Response: __ I noticed __ that at some age groups of around 20, 70 and 100 the friend counts of people are very high.
+
+__Udacity  __ : Besides that some accountsmay be fake due to ridiculous higher counts.
+
+***
+
+### ggplot Syntax
+Notes: 
+
+Finding out the upper and lower limit of age using the summary() command.
+```{r}
+summary(pf$age)
+```
+
+__ In ggplot always add moifications as layers as this helps in debugging errors.__
+
+Adding a layer to the ggplot code above to limit the x-axis from 13 to 90. 
+As facebook users must have a minimum age of 13 and assume people above age of 90 given is false data.
+```{r ggplot Syntax}
+ggplot(data = pf, aes(x = age, y = friend_count)) +
+  geom_point() +
+  xlim(13,90)
+
+```
+
+***
+
+### Overplotting
+Notes:
+
+Overplotting makes it difficult to tell how many points are in each region. (Like in the graph these points are stacked one over the other).
+
+We can __set the transparency of the points using the alpha parameter __ in geom_points().
+
+__(alpha = 1/20)__  --> This makesit will take 20 points to be equivalent to one of these dark dot.
+That is 20 transparent points are required to make the dots dark.
+
+__Alpha transparency for overlapping elements expressed as a fraction between 0 (complete transparency) and 1 (complete opacity).__
+
+
+```{r Overplotting}
+ggplot(data = pf, aes(x = age, y = friend_count)) +
+  geom_point(alpha = 1/20) +
+  xlim(13,90)
+
+```
+
+Running the above code we see that bulk of our data lies between 1000.
+
+We can also __add jitter__. In the code __swap geom_point() and geom_jitter().__
+
+Age is a continuous variable and we have only integer values and we see above that the columns above are perfectly lined up columns which isn't a true reflection of age (so its initutively wrong). We need to see more of points.
+Using jitter we add some noise to each age so that we get a clear pic of relationship between age and friend_count.
+
+```{r}
+ggplot(data = pf, aes(x = age, y = friend_count)) +
+  geom_jitter(alpha = 1/20) +
+  xlim(13,90)
+```
+
+Running our code with jitter we get a more dispersed distribution.
+
+#### What do you notice in the plot?
+Response:
+
+Friend_count for young users are nearly as high as they look before. Bulk of young users have friend_count below 1000
+
+***
+
+### Coord_trans()
+
+[Look up the documentation for coord_trans()](http://docs.ggplot2.org/current/coord_trans.html)
+
+'coord_trans' is different to scale transformations in that it occurs after statistical transformation and will affect the visual appearance of geoms - there is no guarantee that straight lines will continue to be straight.
+
+Transformations only work with continuous values.
+
+x, y  -- transformers for x and y axes
+
+limx, limy	-- limits for x and y axes. (Named so for backward compatibility)
+
+Also refer : [geom_smooth()](http://ggplot2.tidyverse.org/reference/geom_smooth.html)
+
+Add a __layer__ to the plot that transforms friend_count using the square_root function.
+
+Also switch back to __geom_point()__ from __geom_jitter()__. 
+As it is showing error when used with geom_jitter().
+If we wanted to add  __geom_jitter()__ to the code we had to put more eleaborate syntaxes to specify that we only wanted to jitter the ages. We have to be careful because if we add jitter to friend_count hten those people having zero(0) friend_count may have negative value for the friend_count.
+
+And these may lead to square root resulting in imaginary values *i*. So to make this adjustment we pass the position parameter as 'position = position_jitter(h = 0)' where h is the minimum height. Hence it prevents us from getting the warnings and -ve error counts. 
+
+__Rememeber jitter can add +ve or -ve noise to each of our points.__ 
+
+```{r Coord_trans()}
+ggplot(data = pf, aes(x = age, y = friend_count)) +
+  geom_point(alpha = 1/20, position = position_jitter(h = 0)) +
+  xlim(13,90)+
+  coord_trans(y = 'sqrt')
+
+```
+
+#### Look up the documentation for coord_trans() and add a layer to the plot that transforms friend_count using the square root function. Create your plot!
+
+```{r}
+
+```
+
+#### What do you notice?
+
+***
+
+### Alpha and Jitter
+Notes:
+
+```{r Alpha and Jitter}
+
+```
+
+***
+
+### Overplotting and Domain Knowledge
+Notes:
+
+***
+
+### Conditional Means
+Notes:
+
+```{r Conditional Means}
+
+```
+
+Create your plot!
+
+```{r Conditional Means Plot}
+
+```
+
+***
+
+### Overlaying Summaries with Raw Data
+Notes:
+
+```{r Overlaying Summaries with Raw Data}
+
+```
+
+#### What are some of your observations of the plot?
+Response:
+
+***
+
+### Moira: Histogram Summary and Scatterplot
+See the Instructor Notes of this video to download Moira's paper on perceived audience size and to see the final plot.
+
+Notes:
+
+***
+
+### Correlation
+Notes:
+
+```{r Correlation}
+
+```
+
+Look up the documentation for the cor.test function.
+
+What's the correlation between age and friend count? Round to three decimal places.
+Response:
+
+***
+
+### Correlation on Subsets
+Notes:
+
+```{r Correlation on Subsets}
+with(                 , cor.test(age, friend_count))
+```
+
+***
+
+### Correlation Methods
+Notes:
+
+***
+
+## Create Scatterplots
+Notes:
+
+```{r}
+
+```
+
+***
+
+### Strong Correlations
+Notes:
+
+```{r Strong Correlations}
+
+```
+
+What's the correlation betwen the two variables? Include the top 5% of values for the variable in the calculation and round to 3 decimal places.
+
+```{r Correlation Calcuation}
+
+```
+
+Response:
+
+***
+
+### Moira on Correlation
+Notes:
+
+***
+
+### More Caution with Correlation
+Notes:
+
+```{r More Caution With Correlation}
+install.packages('alr3')
+library(alr3)
+```
+
+Create your plot!
+
+```{r Temp vs Month}
+
+```
+
+***
+
+### Noisy Scatterplots
+a. Take a guess for the correlation coefficient for the scatterplot.
+
+b. What is the actual correlation of the two variables?
+(Round to the thousandths place)
+
+```{r Noisy Scatterplots}
+
+```
+
+***
+
+### Making Sense of Data
+Notes:
+
+```{r Making Sense of Data}
+
+```
+
+***
+
+### A New Perspective
+
+What do you notice?
+Response:
+
+Watch the solution video and check out the Instructor Notes!
+Notes:
+
+***
+
+### Understanding Noise: Age to Age Months
+Notes:
+
+```{r Understanding Noise: Age to Age Months}
+
+```
+
+***
+
+### Age with Months Means
+
+```{r Age with Months Means}
+
+```
+
+Programming Assignment
+```{r Programming Assignment}
+
+```
+
+***
+
+### Noise in Conditional Means
+
+```{r Noise in Conditional Means}
+
+```
+
+***
+
+### Smoothing Conditional Means
+Notes:
+
+```{r Smoothing Conditional Means}
+
+```
+
+***
+
+### Which Plot to Choose?
+Notes:
+
+***
+
+### Analyzing Two Variables
+Reflection:
+
+***
+
+Click **KnitHTML** to see all of your hard work and to have an html
+page of this lesson, your answers, and your notes!
+
