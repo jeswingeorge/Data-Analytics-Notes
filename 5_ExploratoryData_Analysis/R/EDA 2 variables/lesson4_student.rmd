@@ -9,6 +9,10 @@ pf <- read.delim("pseudo_facebook.tsv")
 names(pf)
 ```
 
+```{r}
+head(pf)
+```
+
 
 ### Loading libraries
 

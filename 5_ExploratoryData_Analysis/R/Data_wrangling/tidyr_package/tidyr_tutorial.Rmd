@@ -1,0 +1,99 @@
+---
+title: "tidyr package tutorial"
+author: "Jeswin"
+date: "21 September 2017"
+output: html_document
+---
+
+```
+tidyr -a package that reshapes the layout of your data
+
+dplyr - a package that helps you transform tidy, tabular data
+```
+
+tidyr is new package that makes it easy to "tidy" your data. Tidy data is data that's easy to work with: it's easy to munge (with dplyr), visualise (with ggplot2 or ggvis) and model (with R's hundreds of modelling packages). The two most important properties of tidy data are:
+
+- Each column is a variable.
+- Each row is an observation.
+
+Arranging your data in this way makes it easier to work with because you have a consistent way of referring to variables (as column names) and observations (as row indices). When use tidy data and tidy tools, you spend less time worrying about how to feed the output from one function into the input of another, and more time answering your questions about the data.
+
+To tidy messy data, you first identify the variables in your dataset, then use the tools provided by tidyr to move them into columns. tidyr provides three main functions for tidying your messy data:
+-'gather()'
+-'separate()'
+-'spread()'
+
+## Loading libraries
+
+```{r}
+library(tidyr)
+```
+
+
+## Creating a dataframe
+
+```{r}
+messy <- data.frame(
+  name = c("Jeswin", "Ravi", "Toshi"),
+  a = c(67, 80, 64),
+  b = c(56, 90, 50)
+)
+
+messy
+```
+
+## Use gather() function
+
+We have three variables (name, drug and heartrate), but only name is currently in a column. We use gather() to gather the a and b columns into key-value pairs of drug and heartrate:
+
+__ key   >>  drugs __
+
+__ value >>  heartbeat__
+
+```{r}
+jk <- gather(messy, "drugs", "heartbeat", a,b)
+jk
+```
+***
+
+## Use spread() function
+
+There are times when we are required to turn long formatted data into wide formatted data. The 'spread()' function spreads a key-value pair across multiple columns.
+
+```
+Function:       spread(data, key, value, fill = NA, convert = FALSE)
+Same as:        data %>% spread(key, value, fill = NA, convert = FALSE)
+
+Arguments:
+        data:           data frame
+        key:            column values to convert to multiple columns
+        value:          single column values to convert to multiple columns' values 
+        fill:           If there isn't a value for every combination of the other variables and the key 
+                        column, this value will be substituted
+        convert:        if TRUE will automatically convert values to logical, integer, numeric, complex or 
+                        factor as appropriate
+
+```
+
+```{r}
+new_messy <- spread(jk, "drugs", "heartbeat", fill = NA, convert = FALSE)
+new_messy
+```
+
+
+
+## So 'gather()' and 'spread()' are inverse operations of each other.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
