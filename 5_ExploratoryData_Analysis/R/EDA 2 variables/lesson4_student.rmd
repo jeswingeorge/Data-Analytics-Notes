@@ -17,6 +17,7 @@ head(pf)
 ### Loading libraries
 
 ```{r}
+library(dplyr)
 library(ggplot2)
 ```
 
@@ -135,6 +136,8 @@ And these may lead to square root resulting in imaginary values *i*. So to make 
 
 __Rememeber jitter can add +ve or -ve noise to each of our points.__ 
 
+#### Look up the documentation for coord_trans() and add a layer to the plot that transforms friend_count using the square root function. Create your plot!
+
 ```{r Coord_trans()}
 ggplot(data = pf, aes(x = age, y = friend_count)) +
   geom_point(alpha = 1/20, position = position_jitter(h = 0)) +
@@ -143,36 +146,98 @@ ggplot(data = pf, aes(x = age, y = friend_count)) +
 
 ```
 
-#### Look up the documentation for coord_trans() and add a layer to the plot that transforms friend_count using the square root function. Create your plot!
-
-```{r}
-
-```
-
-#### What do you notice?
+Here we see distribution of friend_count conditional on age. For exaple we can see thresholds of friend_count above which there are many few users.
 
 ***
 
 ### Alpha and Jitter
-Notes:
+Examine the relationship between friendships_initiated (y) and age (x) using the ggplot syntax. We recommend creating a basic scatter
+plot first to see what the distribution looks like and then adjusting it by adding one layer at a time.
+
+Remember to make adjustments to the breaks of the x-axis and to use apply alpha and jitter.
+
 
 ```{r Alpha and Jitter}
 
+ggplot(data = pf, aes(x = age, y = friendships_initiated)) +
+  geom_point(alpha = 1/20, size = 1.5, position = position_jitter(h = 0))+
+  xlim(13,90) +
+  coord_trans(y = 'sqrt')
+
 ```
 
-***
 
-### Overplotting and Domain Knowledge
-Notes:
+## Using coord_trans('log10')
+When I tried to submit the same graph using log10 in the coord_trans function, I got an error. My submission
+looked like this:
+```
+
+ggplot(aes(x = age, y = friendships_initiated), data = pf) + geom_point(alpha = 1/20, position = position_jitter(h = 1)) +
+  xlim(13,90) +
+  coord_trans(y = "log10")
+```
+ log10 would throw an error if it was 0. some 'friendships_initiated' are zero.
+ So used 'y = friendships_initiated + 0.001' ta avoid error using 'log 0'.
+ 
+ 
+```{r}
+ggplot(data = pf, aes(x = age, y = friendships_initiated + 0.001)) +
+  geom_point(alpha = 1/20, size = 1.5, position = position_jitter(h = 0))+
+  xlim(13,90) +
+  coord_trans(y = 'log10')
+```
+
+
+```{r}
+ggplot(aes(x = age, y = friendships_initiated+0.01), data = pf) +
+geom_point(alpha = 1/20, position = position_jitter(h=0)) +
+coord_trans(y = "log10") + 
+scale_x_continuous(breaks = seq(0,max(pf$age),10))+
+  scale_y_continuous(breaks = seq(0,10,1))
+```
+
+
+If you add breaks to the 'y' axis, you will see why there are bars of data in certain locations: This is because there is no jitter in the y direction and the values are integers.
 
 ***
 
 ### Conditional Means
 Notes:
 
+__dplyr__ - package that helps to transform tidy, tabular data:
+Most common functions are:
+- filter()
+- groupby()
+- mutate()
+- arrange()
+
 ```{r Conditional Means}
 
+age_groups <- group_by(pf,age)
+pf.fc_by_age <- summarise(age_groups,
+                          friend_count_mean = mean(friend_count),
+                          friend_count_median = median(friend_count),
+                          n = n()
+                          )
+pf.fc_by_age <- arrange(pf.fc_by_age, age)
+head(pf.fc_by_age)
+
 ```
+
+### Conditional means alternate code using %%
+
+```{r}
+pf.fc_by_age2 <- pf %>%
+  group_by(age) %>%
+  summarise(friend_count_mean2 = mean(friend_count),
+            friend_count_median2 = median(friend_count),
+            n = n()) %>%
+  arrange(age)
+
+head(pf.fc_by_age2)
+```
+
+
 
 Create your plot!
 
