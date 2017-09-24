@@ -1,0 +1,276 @@
+---
+title: "Time Data Types"
+author: "Jeswin"
+date: "23 September 2017"
+output: html_document
+---
+
+# Time and Date Variables
+
+There are a variety of different types specific to time data fields in R. Here we only look at two, the POSIXct and POSIXlt data types:
+
+## POSIXct
+
+The POSIXct data type is the number of seconds since the start of January 1, 1970. Negative numbers represent the number of seconds before this time, and positive numbers represent the number of seconds afterwards.
+
+Output of Sys.time() is in POSIXct format. 
+
+## POSIXlt
+
+The POSIXlt data type is a vector, and the entries in the vector have the following meanings:
+
+seconds
+minutes
+hours
+day of month (1-31)
+month of the year (0-11)
+years since 1900
+day of the week (0-6 where 0 represents Sunday)
+day of the year (0-365)
+Daylight savings indicator (positive if it is daylight savings)
+
+
+Part of the difficulty with time data types is that R prints them out in a way that is different from how it stores them internally.
+
+To get the current time, the Sys.time() can be used.
+
+The as.POSIXct and as.POSIXlt commands are used to convert the time value into the different formats.
+
+```{r}
+t <- Sys.time()
+t
+```
+
+```{r}
+typeof(t)
+```
+
+```{r}
+c <- as.POSIXct(t)
+c
+```
+
+```{r}
+unclass(c)
+c
+```
+
+
+
+
+```{r}
+l <- as.POSIXlt(t)
+l
+unclass(l)
+```
+```{r}
+# We can access months/date/year using the strptime() function
+# Useful in solving problems related to date and time and for graph plotting
+l$mon
+l$mday
+```
+
+## strftime command
+
+There are times when you have a time data type and want to convert it into a string so it can be saved into a file to be read by another application.
+
+The strftime command is used to take a time data type and convert it to a string. 
+
+You must supply an additional format string to let R what format you want to use. See the help page on strftime to get detailed information about the format string.
+
+```{r}
+t <- Sys.time()
+t
+typeof(t)
+time2str <- strftime(t, "%Y-%m-%d %H:%M:%S")
+time2str
+typeof(time2str)  
+```
+
+
+
+##  strptime command 
+Commonly a time stamp is saved in a data file, and it must be converted into a time data type to allow for calculations. For example, you may be interested in how much time has elapsed between two observations. 
+
+ The strptime command is used to take a string and convert it into a time data type. Like strftime it requires a format string in addition to the time stamp.
+ 
+
+The strptime command is used to take a string and convert it into a form that R can use for calculations.
+
+In the following example a data frame is defined that has the dates stored as strings. 
+
+If you read the data in from a csv file this is how R will keep track of the data. Note that in this context the strings are assumed to represent ordinal data, and R will assume that the data field is a set of factors.
+You have to use the strptime command to convert it into a time field.
+
+```{r}
+myData <- data.frame(time = c("2014-01-23 14:22:21", "2014-01-23 14:28:12", "2011-11-13 11:28:12", "2014-01-23 04:18:02"), speed = c(12,56,34,67))
+myData
+```
+```{r}
+typeof(myData$time[1])
+```
+
+```{r}
+summary(myData)
+```
+
+```{r}
+myData$time <- strptime(myData$time, "%Y-%m-%d %H:%M:%S")
+myData
+```
+
+```{r}
+myData$time
+typeof(myData$time[1])
+```
+
+
+
+```{r}
+dateString <- c("January 10, 2012 12:13", "December 9, 2011 9:10")
+x <- strptime(dateString, "%B %d, %Y %H:%M")
+x
+```
+
+Now you can perform operations on the fields. For example you can determine the time between observations. 
+
+```{r}
+a <- myData$time
+a
+```
+```{r}
+a[2]-a[1]
+a[4]-a[3]
+```
+
+```{r}
+mn <- x[1]
+mn
+mn$mon
+mn$year
+
+```
+
+
+
+
+
+
+
+
+## In addition to the time data types R also has a date data type. 
+
+The difference is that the date data type keeps track of numbers of days rather than seconds. 
+
+You can cast a string into a date type using the __as.Date__ function. The __as.Date__ function takes the same arguments as the time data types discussed above.
+
+```{r}
+theDates <- c("1 Jan 2012", "2 Nov 2017", "6 Dec 2014")
+dateFields <- as.Date (theDates, "%d %b %Y" )
+typeof(dateFields)
+dateFields
+dateFields[2]-dateFields[1]
+```
+
+You can also define a date in terms of the number days after another date using the origin option.
+
+```{r}
+infame <- as.Date(179, origin = "2011-11-02")
+infame
+Sys.Date()+07
+```
+
+Finally, a nice function to know about and use is the __format command__. It can be used in a wide variety of situations, and not just for dates. It is helpful for dates, though, because you can use it in __cat__ and __print__ statements to make sure that your output is in exactly the form that you want.
+
+```{r}
+theTime <- Sys.time()
+theTime
+a <- rexp(1,0.1)
+a
+cat("At about", format(theTime, "%H:%M"), "the time between occurances was around",format(a,digits=3),"seconds\n")
+```
+
+## Time Operations
+
+The most difficult part of dealing with time data can be converting it into the right format.
+
+Once a time or date is stored in R's internal format then a number of basic operations are available. The thing to keep in mind, though, is that the units you get after an operation can vary depending on the magnitude of the time values. 
+
+```{r}
+now <- Sys.time()
+now
+now - 60
+
+earlier <- strptime("2000-01-01 00:00:00","%Y-%m-%d %H:%M:%S")
+later <- strptime("2000-01-01 00:00:20","%Y-%m-%d %H:%M:%S")
+later-earlier
+
+as.double(later - earlier)
+```
+
+```{r}
+up <- as.Date("1961-08-13")
+down <- as.Date("1989-11-9")
+down-up
+```
+
+The two examples involving the variables earlier and later in the previous code sample should cause you a little concern. The value of the difference depends on the largest units with respect to the difference! The issue is that when you subtract dates R uses the equivalent of the __difftime command__. We need to know how this operates to reduce the ambiguity when comparing times.
+
+```{r}
+earlier <- strptime("2000-01-01 00:00:00","%Y-%m-%d %H:%M:%S")
+later <- strptime("2000-01-01 01:00:00","%Y-%m-%d %H:%M:%S")
+difftime(later,earlier)
+difftime(later,earlier,units="secs")
+```
+
+
+One thing to be careful about difftime is that it is a double precision number, but it has units attached to it. This can be tricky, and you should be careful about the ambiguity in using this command. I personally always try to specify the units to avoid this.
+
+```{r}
+earlier <- strptime("2000-01-01 00:00:00","%Y-%m-%d %H:%M:%S")
+later <- strptime("2000-01-01 00:00:20","%Y-%m-%d %H:%M:%S")
+d <- difftime(later,earlier)
+d
+```
+
+Another way to define a time difference is to use the __as.difftime__ command. It takes two dates and will compute the difference between them. It takes a time, its format, and the units to use. 
+
+```{r}
+diff <- as.difftime("00:30:00","%H:%M:%S",units="hour")
+diff
+Sys.time()
+Sys.time() + diff
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

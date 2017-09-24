@@ -1,0 +1,418 @@
+---
+title: "lubridate_package"
+author: "Jeswin"
+date: "24 September 2017"
+output: html_document
+---
+ Reference : [Handling dates in R](https://skgrange.github.io/date_handling.html#other_important_date_functions)
+ 
+ IMP while studying READ THE ABOVE BLOG TOO as i have skipped some points
+ 
+ R is great at handling dates and time, but date handling is hugely simplified and augmented by the lubridate package.
+ 
+# R's date types
+
+R's data types which are used for dates and times fall into two categories:
+
+ __Instants__ represent specific moments in time such as January 3rd 1998 or a representation such as  2016-12-25 07:30:00. This is what most people mean when referring to a "date" and are usually used to represent the date of an event or observation.
+
+__Timespans__ represent lengths of time like 35 minutes or 89 years and are used to represent the time taken to run 5 kilometers or a life-span of a vehicle
+ 
+## Instants
+ 
+R has three main data types which are used for instants and these are: 'POSIXct', 'POSIXlt' (both subsets of POSIXt), and 'Date'.
+ 
+ 
+ The __POSIXct__ data type is the most important and usually best type of date to use and will be the mostly discussed data type here. POSIXct is an odd word for "date" but it is just a technical definition of a standard type of date which is used across many operating systems.
+ 
+ 
+ The __Date class__ operates in a very similar way to POSIXct but it cannot represent times, only dates/days. __POSIXlt__ is a list data class and will not be discussed because I have not legitimately used this data type
+ 
+## Timespans 
+ 
+* R has a data type for timespans called __difftime__.
+
+* prefer using lubridate's three timespan data classes instead. These timespan data types are __interval__, __period__, and  __duration__.
+
+# Numeric dates
+
+most software store and manipulate dates as numeric values which represent a unit of time from an origin. This origin is often called an __epoch__ and the best and most common example of this system is unix time. Unix time's epoch began on the January 1, 1970 and uses seconds since this date to store dates.
+
+
+ R's __POSIXct__ data type follows this definition and the Date data type has the same epoch, but uses elapsed days since January 1, 1970. When a date is encountered in a format such as 2015-01-15 11:54, this representation needs to be recognised by software to calculate the correct numeric-value and in the case of R this will be usually be the number of seconds since  1970-01-01 00:00:00. 
+ This process is called __parsing__. 
+
+ 
+```{r}
+# A standard date string
+date_example <- "2017-09-11 12:30"
+
+# Make R recognise the date/parse
+data_example_recognised <- as.POSIXct(date_example)
+
+# Print
+data_example_recognised
+```
+
+```{r}
+# Data type
+class(data_example_recognised)
+```
+
+```{r}
+# Numeric representation, seconds since 1970-01-01
+as.numeric(data_example_recognised)
+```
+
+
+# Parsing dates
+
+ Most data importing functions will leave the date parsing to the user as a separate step. R's base date parsing uses a combination of the as.POSIXct and strptime while __lubridate__ has a couple of low-level functions which are generally used with the __ymd_hms__ family of functions.
+
+## Using as.POSIXct and strptime
+
+o parse a date without the lubridate package, __as.POSIXct__ and __strptime__ are used together.  __as.POSIXct__ can be, and was, used in the first code chunk (above) without strptime. This was allowed in that example because the date was in the standard hierarchical format which represents time units largest to smallest (years, months, days, hours, minutes, seconds) and used the standard - and : delimiters.
+
+```{r}
+# A date which follows the UK convention
+data_example_a <- "05/05/2016 11:00"
+
+# Parse the data
+as.POSIXct(strptime(data_example_a, format = "%d/%m/%Y %H:%M"), tz = "Europe/London")
+```
+
+I find using strptime tedious at times because if the delimiter changes, as with the example below, the parsing will fail:
+
+```{r}
+data_example_b <- "05-05-2016 11:00"
+as.POSIXct(strptime(data_example_b, format = "%d/%m/%Y %H:%M"), tz = "Europe/London")
+```
+
+This can be fixed by stating the correct delimiters for strptime:
+
+```{r}
+as.POSIXct(strptime(data_example_b, format = "%d-%m-%Y %H:%M"), tz = "Europe/London")
+```
+
+__The tedious nature of using strptime is why I highly recommended using lubridate's functions instead.__
+
+## Using lubridate's 'ymd_hms' family of functions
+
+__lubridate__ contains a family of functions which are easier to use than __as.POSIXct__ and __strptime__.
+
+- hierarchical date format which is complete with seconds (such as 2015-01-15 11:54:00) will be parsed with __ymd_hms__.
+-  if the date did not contain seconds (2015-01-15 11:54), __ymd_hm__ would be used.
+- For different date-piece orders such as the UK with a day/month/year convention, the letters are simply rearranged: __dmy_hms__ or __dmy_hm__.
+- The __ymd_hms__ functions do not need to be told what delimiters are in use and can parse text representations of months like March 1 2015 without user input and AM/PM convention too
+
+
+## Time-zone argument
+
+The __ymd_hms__ family of functions have a time-zone argument (tz). It is recommended that tz is always used to ensure that the return is POSIXct and helps with ambiguity issues.
+
+
+ If a function is used without the hour, minute, and seconds (such as ymd or dmy) without use of tz, the return will be Date. This will cause issues if future logic is expecting POSIXct rather than Date. If a time-zone is really not important for your application, use the default of "UTC".
+ 
+```{r}
+# Load packages
+library(lubridate)
+library(stringr)
+```
+
+```{r}
+# Parse different date formats
+# Hierarchical date format
+ymd_hms("2015-01-15 11:54:00", tz = "UTC")
+```
+
+```{r}
+# Parse different date formats
+# Hierarchical date format
+ymd_hms(Sys.time())
+```
+
+
+```{r}
+# Hierarchical date format without seconds
+ymd_hm("2015-01-15 11:54", tz = "UTC")
+```
+
+```{r}
+# Hierarchical date format without seconds or minutes
+ymd_h("2015-01-15 11", tz = "UTC")
+```
+
+```{r}
+# Just a date
+ymd("2015-01-15", tz = "UTC")
+```
+
+```{r}
+# Different orders delimeters 
+dmy_hms("22/02/1986 23:05:04", tz = "UTC")
+```
+
+```{r}
+dmy_hm("22/02/1986 23:05", tz = "UTC")
+```
+
+```{r}
+# Only date
+dmy("22/02/1986", tz = "UTC")
+```
+
+```{r}
+# Different delimeters are no problem
+dmy("22.02.1986", tz = "UTC")
+```
+
+
+```{r}
+# No delimeter
+dmy("22021986", tz = "UTC")
+```
+
+```{r}
+# Spaces
+dmy("22 02 1986", tz = "UTC")
+```
+
+```{r}
+# Months as strings, full or abbreviated but will depend on your locale settings
+dmy("6 August 2015", tz = "UTC")
+```
+
+```{r}
+dmy("22 Jan 2000", tz = "UTC")
+```
+
+### AM/PM dates
+```{r}
+dmy_hms("12/03/2013 3:40:00 AM")
+```
+
+```{r}
+dmy_hms("12/03/2013 3:40:00 PM")
+```
+
+```{r}
+dmy_hms("12/03/2013 3:40:00 p.m.")
+```
+
+### 24:00 midnight notation
+
+lubridate can handle this special case, and even allows for incorrect usage when time goes beyond 24:00 which I have come across a couple of times:
+
+```{r}
+# This date is identical to the first instant of the next day
+ymd_hm("2012-06-05 24:00", tz = "UTC")
+```
+
+```{r}
+# Incorrect useage of date "spillage" is handled too
+ymd_hm("2012-06-05 24:15", tz = "UTC")
+```
+
+### Fractional seconds
+
+Fractional seconds are handled automatically by __lubridate__.To ensure fractional seconds are displayed, set the global __digits.secs__ option.
+
+
+```{r}
+options(digits.secs = 1)
+ymd_hms("2015-07-05 10:10:05.5")
+```
+
+### Heterogeneous formats
+
+One of the most powerful features of the __ymd_hms__ family is the ability to handle different (heterogeneous) date formats. This can be very useful when different date formats are contained in a single vector.
+
+```{r}
+# Different formats
+date_vector_a <- c("2019-04-11", "11/04/2019")
+parse_date_time(date_vector_a, orders = c("ymd", "dmy"), tz = "UTC")
+```
+
+## Common examples with tabular data : An "ideal" situation
+
+#### REFER BLOG
+
+```{r}
+bday_list_df <- read.csv("birthdaysExample.csv",stringsAsFactors = FALSE)
+head(bday_list_df)
+```
+
+```{r}
+# What data types has the read.csv given the variables?
+str(bday_list_df)
+```
+
+__str (structure)__ shows that the date variable has been loaded as a character not a date but the format is in the standard __mm-dd-yyyy__ format.
+The dates can be parsed simply with __mdy__.
+
+```{r}
+# Parse dates with lubridate
+bday_list_df$dates <- mdy(bday_list_df$dates)
+
+# Look at data types now
+str(bday_list_df)
+```
+
+##### CHECK BLOG IMP
+
+# Other important date functions
+
+```{r}
+# Base R's functions
+Sys.time()
+```
+```{r}
+Sys.timezone()
+```
+
+```{r}
+Sys.Date()
+```
+
+```{r}
+# Same as Sys.time but has a tz argument
+now()
+```
+
+```{r}
+now("Pacific/Auckland")
+```
+
+```{r}
+# Same as Sys.Date
+today()
+```
+
+## Extracting pieces of a date
+
+```{r}
+# Make date
+data_a_parsed <- ymd_hms("2016-08-07 22:00:05", tz = "Europe/London")
+
+year(data_a_parsed)
+```
+```{r}
+month(data_a_parsed)
+```
+
+```{r}
+day(data_a_parsed)
+```
+
+```{r}
+hour(data_a_parsed)
+```
+
+```{r}
+minute(data_a_parsed)
+```
+
+```{r}
+second(data_a_parsed)
+```
+
+```{r}
+# Time-zone, length of 1
+attr(data_a_parsed, "tzone")
+```
+
+```{r}
+as.numeric(data_a_parsed)
+```
+
+```{r}
+as.integer(data_a_parsed)
+```
+
+## Rounding dates
+
+```{r}
+round_date(data_a_parsed, unit = "hour")
+```
+
+```{r}
+floor_date(data_a_parsed, unit = "hour")
+```
+
+
+```{r}
+ceiling_date(data_a_parsed, unit = "hour")
+```
+
+## Lubridate version used in this note
+```{r}
+packageVersion("lubridate")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
