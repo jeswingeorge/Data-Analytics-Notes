@@ -1,0 +1,626 @@
+---
+title: 'EDA 1 Variable : Problem set'
+author: "Jeswin"
+date: "18 September 2017"
+output: html_document
+---
+# Problem set : Explore one variable
+
+Use these commands to load the diamonds data set. 
+
+```{r}
+library(ggplot2) #must load the ggplot package first
+suppressMessages(library(dplyr))
+library(tidyr)
+data(diamonds) #loads the diamonds data set since it comes with the ggplot package
+suppressMessages(library(lubridate))
+```
+
+You need to run these command each time you launch RStudio to access the diamonds data set. RStudio won't remember which packages and data sets you loaded unless you change your preferences or save your workspace.
+
+You should notice that the diamonds data set will be listed as a __'Promise'__ in the workspace. This is a special object in R, and __you need to run a command on the data to fully load the data set. Try running a summary:__
+summary(diamonds)
+
+There are other data sets that come with R. You can load these data sets by typing the command data(DATA_SET_NAME).
+You can learn more about the diamonds data set by typing ?diamonds.
+Read the help file to determine the best color for the diamonds data set. When you run diamonds$color, you will notice that the levels of color are set as D < E < F < ...
+
+This does not indicate that D is the worst color but rather an ordering to the colors.
+
+## Qtn 1 : How many ordered factors in the dataset ?
+```{r}
+summary(diamonds)
+str(diamonds)
+```
+
+Hence 3 ordered factors are there.
+
+## Qtn 2  Create a histogram of the price of all the diamonds in the diamond data set.
+
+```{r}
+qplot(data = diamonds, x = price, binwidth = 1000) +
+  scale_x_continuous(breaks = seq(0,19500,1000))
+
+```
+
+```{r}
+summary(diamonds$price)
+```
+
+## Qtn 3: How many diamonds cost less than 500, 250 and then (15000 or more)? 
+
+```{r}
+sum(diamonds$price < 500)
+
+sum(diamonds$price < 250)
+
+sum(diamonds$price >= 15000)
+```
+
+## Qtn 4 : Explore the largest peak in the price histogram you created earlier.
+Try limiting the x-axis, altering the bin width and setting different breaks on the x-axis.
+
+### You can save images by using the ggsave() command.
+ ggsave() will save the last plot created. 
+
+```
+qplot(x = price, data = diamonds)
+ggsave('priceHistogram.png')
+```
+ggsave currently recognises the extensions eps/ps, tex (pictex), pdf, jpeg, tiff, png, bmp, svg and wmf (windows only).
+
+```{r}
+qplot(data = diamonds, x = price, binwidth = 1) +
+  scale_x_continuous(breaks = seq(0,2000,100), lim = c(0, 2000))
+ggsave('priceHistogram.png')
+```
+
+
+##Qtn 5  Price by cut histograms 
+Break out the histogram of diamond prices by cut.
+You should have five histograms in separate panels on your resulting plot.
+```{r}
+qplot(data = diamonds, x = price, binwidth = 500) +
+  facet_grid(cut ~ .)
+ggsave('price_cuts_Histogram.png')
+```
+
+```{r}
+by(diamonds$price, diamonds$cut, summary)
+```
+## Qtn 6
+### Which cut has highest priced diamond?
+Ans: Diamond cut : Premium : 18823
+
+### Which cut has lowest priced diamond?
+Ans: Diamond cut : Premium and Ideal : 326
+
+### Scales and Multiple histograms
+```{r}
+qplot(x = price, data = diamonds) + facet_wrap(~cut)
+```
+
+The 'Fair' and 'Good' diamonds appear to have different distributions compared to the better cut diamonds. They seem somewhat uniform on the left with long tails on the right.
+Let's look in to this more.
+Look up the documentation for facet_wrap in R Studio. Then, scroll back up and add a parameter to facet_wrap so that the y-axis in the histograms is not fixed. You want the y-axis to be different for each histogram.
+
+
+### Qtn 8 : Scales and Multiple Histograms
+
+It's a good idea to consider the scales when you create plots.
+
+```{r}
+qplot(x = price, data = diamonds, binwidth = 500) + 
+  facet_wrap( ~ cut, scales = "free_y")
+
+```
+
+```{r}
+ggplot(aes(x=price), data = diamonds)+
+  geom_histogram(binwidth = 100, limits = c(0,18000))+
+  facet_wrap( ~ cut, scales = 'free_y')
+
+```
+
+
+### Qtn 9 : Price per Carat by Cut
+Create a histogram of price per carat and facet it by cut. You can make adjustments to the code from the previous exercise to get
+started.
+Adjust the bin width and transform the scale of the x-axis using log10.
+
+```{r}
+diamonds$price_per_carat <- diamonds$price/diamonds$carat
+ggplot(data = diamonds, aes(x = price_per_carat))+
+  geom_histogram()+
+  scale_x_log10()+
+  facet_wrap( ~ cut, scales = "free_y")
+
+```
+
+As a side note, its suggested that instead of transforming the data itself in the aesthetic mapping i.e. x = log(price_per_carat), you should add a layer that performs the transform on the axis i.e. scale_x_log10( ... ). With the position scale transform, the units on the tickmarks for the axis will be in the original units of the data, which will be easier to interpret e.g. 3.3, 4.0 in the log-10 scale vs. 3000, 10000 in the natural scale.
+
+
+### Qtn 10 : Price Box plots
+
+Investigate the price of diamonds using box plots, numerical summaries, and one of the following categorical variables: cut, clarity, or color.
+
+__Boxplot using cut and prices__
+
+```{r}
+p1_cut <- ggplot(data = diamonds, aes(x = cut, y = price)) +
+  geom_boxplot() + 
+  coord_cartesian(ylim = c(0,7000))
+
+p2_clarity  <- ggplot(data = diamonds, aes(x = clarity, y = price)) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(0,6000))
+  
+
+p3_color <- ggplot(data = diamonds, aes(x = color, y = price)) +
+  geom_boxplot()+
+  coord_cartesian(ylim = c(0, 8000))
+
+library(gridExtra)
+library(grid)
+
+grid.arrange(p1_cut, p2_clarity, p3_color, ncol = 1)
+ggsave('boxplot_compilation.png')
+  
+```
+
+## Qtn 11 : Interquartile Range - IQR
+
+You can use the function IQR() to find the interquartile range. Pass it a subset of the diamonds data frame. 
+
+For example:
+```
+IQR(subset(diamonds, price <1000)$price)
+```
+
+Remember that subset() returns a data frame so we need to use $price on the end to access that variable.
+
+### Price range for middle for middle 50% of diamonds with color D?
+
+```{r}
+summary(subset(diamonds, color == 'D')$price)
+```
+```{r}
+IQR(subset(diamonds, color == 'D')$price)
+```
+
+### Price range for middle for middle 50% of diamonds with color J?
+```{r}
+summary(subset(diamonds, color == 'J')$price)
+```
+
+```{r}
+IQR(subset(diamonds, color == 'J')$price)
+```
+
+
+```{r}
+summary(subset(diamonds, color == 'E')$price)
+```
+
+```{r}
+summary(subset(diamonds, color == 'I')$price)
+```
+
+### Qtn 12. Price per Carat Box Plots by Color
+Investigate the price per carat of diamonds across the different colors of diamonds using boxplots.
+
+```{r}
+ggplot(data = diamonds, aes(x = color, y = price_per_carat))+
+  geom_boxplot()+
+  coord_cartesian(ylim = c(2000,6000))
+```
+
+### Qtn 13: Carat Frequency Polygon
+Investigate the weight of the diamonds (carat) using a frequency polygon. Use different __binwidths__ to see how the frequency polygon changes. What carat size has a count greater than 2000?
+
+
+qplot(data = diamonds, x = price, binwidth = 1) +
+  scale_x_continuous(breaks = seq(0,2000,100), lim = c(0, 2000))
+  
+  
+```{r}
+ggplot(data = diamonds, aes(x = carat)) +
+  geom_freqpoly(binwidth = 0.1) +
+  scale_x_continuous(breaks = seq(0,5,1), lim = c(0,5))+
+  coord_cartesian(ylim = c(2000,12000))
+
+```
+
+__Try adjusting the bin width; a too-large bin size might lead you to believe that some carat weights occur more often than they actually do in the data__. You might also want to look at a __table()__ of counts to help focus down on an answer.
+
+```{r}
+table(diamonds$carat)
+```
+
+## Doing the problem programmatically
+
+it is pretty hard to read from a frequency polygon plot all the carats bins over 2000 counts.
+
+What I did was to check the carat variable first, and not notice that the minimum interval between carat values was 0.01 (that is the precision of the carat values in the data set). Then I did:
+
+And that gave the carats sizes with more than 2000 counts.
+I think the idea of the problem was to exercise ourselves in the use of the binwidths, and how can it change our perception of the distribution of a variable, but I don't think it was the best question to ask. 
+
+```{r}
+carats <- as.data.frame(table(diamonds$carat))
+carats[carats$Freq > 2000, ]
+```
+
+Another way is to use the table function:
+
+```
+with(diamonds, table(carat)[table(carat) > 2000])
+
+```
+
+```{r}
+with(diamonds, table(carat)[table(carat) > 2000])
+
+```
+
+That statement broken down:
+1. __with(diamonds, )__
+
+This part just means that you don't have to refer to the dataframe in the 'table' part. That is, you don't have to use:
+
+```
+diamonds$carat
+```
+
+2. table
+
+The 'table' part creates a frequency table (or table of counts for each variable)
+
+You can get more detail on 'table' if you type:
+
+  __?table__
+  
+in the console in RStudio.
+
+3. __[table(carat)>2000]__
+
+This limits the table to the values that have a count greater than 2000.
+
+You can see the effect if you run:
+
+```
+table(diamonds$carat)
+table(diamonds$carat)[table(diamonds$carat) > 2000]
+```
+
+as two separate statements.
+
+### Data Wrangling with R
+Data munging or data wrangling can take up much of a data scientist's or data analyst's time. There are two R packages that make these tasks easier in R: tidyr and dplyr.
+
+tidyr -a package that reshapes the layout of your data
+
+dplyr - a package that helps you transform tidy, tabular data
+
+Review [Data Wrangling in R](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/DataWranglingWithR.pdf) to get a sense of how these packages allow you to manipulate data. You can use these packages to help you in the next programming task and in your future investigations.
+
+There are some useful cheat sheets on [RStudio's webpage](http://www.rstudio.com/resources/cheatsheets/). 
+
+The [Data Import](https://github.com/rstudio/cheatsheets/raw/master/source/pdfs/data-import-cheatsheet.pdf) and [Data Transformation](https://github.com/rstudio/cheatsheets/raw/master/source/pdfs/data-transformation-cheatsheet.pdf) sheets will be good references for working with tidyr and dplyr, respectively.
+
+
+-------------------------------------------------------------------------------------------------
+# [Reading data from excel files](http://www.sthda.com/english/wiki/reading-data-from-excel-files-xls-xlsx-into-r) 
+
+IMP WEBSITE LINK ABOVE
+
+## method 1 :On Windows system
+
+Open the Excel file containing your data: select and copy the data (ctrl + c)
+
+Type the R code below to import the copied data from the clipboard into R and store the data in a data frame (my_data)
+```
+my_data <- read.table(file = "clipboard", 
+                      sep = "\t", header=TRUE)
+
+```
+
+## Method 2: Importing Excel files into R using readxl package
+
+The readxl package, developed by Hadley Wickham, can be used to easily import Excel files (xls|xlsx) into R without any external dependencies.
+
+```
+install.packages("readxl"
+library("readxl")
+```
+
+### Read both xls and xlsx files
+
+```
+# Loading
+library("readxl")
+# xls files
+my_data <- read_excel("my_file.xls")
+# xlsx files
+my_data <- read_excel("my_file.xlsx")
+```
+
+### Specify sheet with a number or name
+```
+# Specify sheet by its name
+my_data <- read_excel("my_file.xlsx", sheet = "data")
+  
+# Specify sheet by its index
+my_data <- read_excel("my_file.xlsx", sheet = 2)
+
+```
+### Case of missing values: NA (not available). If NAs are represented by something (example: "-") other than blank cells, set the na argument:
+
+```
+my_data <- read_excel("my_file.xlsx", na = "---")
+```
+
+## Importing Excel files using xlsx package
+
+The xlsx package, a java-based solution, is one of the powerful R packages to read, write and format Excel files.
+
+### Installing and loading xlsx package
+
+```
+install.packages("xlsx")
+library("xlsx")
+```
+
+### Using xlsx package
+There are two main functions in xlsx package for reading both xls and xlsx Excel files: read.xlsx() and read.xlsx2() [faster on big files compared to read.xlsx function].
+
+The simplified formats are:
+
+```
+read.xlsx(file, sheetIndex, header=TRUE)
+read.xlsx2(file, sheetIndex, header=TRUE)
+```
+
+
+### Quiz 15 : Gapminder Data
+
+[Gapminder Data](http://www.gapminder.org/data/)  : Aged 15-24 employment rate (%)
+
+The following command may be helpful for some of the Gapminder Data sets, once it's been converted to csv format: 
+
+__read.csv('data.csv', header = T, row.names = 1, check.names = F)__ 
+
+You may want to look at additional function arguments in the help file for the read.table() family for additional tools that can help you read in data.
+
+If you want to exchange the rows and columns of your dataframe, it will also be useful to know the transpose function, 
+__t()__
+
+The Gapminder website contains over 500 data sets with information about the world's population. Your task is to download a data set of your choice and create 2-5 plots that make use of the techniques from Lesson 3.
+
+You might use a simple histogram, a boxplot split over a categorical variable, or a frequency polygon. The choice is yours!
+
+
+
+```{r}
+emprate <- read.csv("indicator_t 15-24 employ.csv",header = T, row.names = 1, check.names = F)
+head(emprate)
+```
+
+```{r}
+emprate <- emprate[1:178,1:17]   # Used slicing to remove NA column (179) and row(18)
+dim(emprate)
+```
+
+Taking transpose of the dataframe.
+And from the transposed dataframe selct the countries(column names) whose employement rate i am interested in finding.
+
+```{r}
+emprate <- data.frame(t(emprate))
+dfemprate <- emprate[ , c("Bangladesh", "India", "Germany", "Japan", "United.Kingdom", "United.States", "Russia", "Pakistan")]
+head(dfemprate)
+```
+
+```{r}
+years <- factor(rownames(dfemprate), labels = c(1991:2007) )
+dfemprate <- cbind(years, dfemprate)
+head(dfemprate)
+```
+
+
+
+
+First loading the tidyr package
+Using gather() command:
+
+```{r}
+library(tidyr)
+country_emp <- gather(dfemprate,key = countries, value = Emp_rate, Bangladesh, India, Germany, Japan, United.Kingdom, United.States, Russia,Pakistan)
+head(country_emp)
+```
+
+
+
+
+### My qtns : Finding employement rate of different countries from 1991 to 2007
+
+## Creating boxplot
+
+```{r}
+ggplot(data = country_emp, aes(x = countries, y = Emp_rate)) +
+  geom_boxplot()+
+  coord_cartesian(ylim = c(30,65))+
+  ggsave('boxplot.png')
+```
+
+
+## Creating scatterplot
+
+```{r}
+ggplot(data = country_emp, aes(x=years, y=Emp_rate, group = countries, colour = countries))+
+  geom_line()+
+  ggsave('scatr.png')
+  
+```
+
+***
+## Quiz 16 : Exploring friends bday
+
+Once you load the data into R Studio, you can use the strptime() function  to extract the birth months and birth days. We recommend looking up the documentation for the function and finding examples online. Once you've completed your investigation, create a post in the discussions that includes:
+       1. any questions you answered, your observations, and summary statistics
+       2. snippets of code that created the plots
+       3. links to the images of your plots
+       
+       
+### Qtns:
+
+- Which month contains the most number of birthdays?
+- How many birthdays are in each month?
+
+- Which day of the year has the most number of birthdays?
+
+- Do you have at least 365 friends that have birthdays on everyday of the year??
+
+
+
+```{r}
+bday_list_df <- read.csv("birthdaysExample.csv",stringsAsFactors = FALSE)
+bday_list_df$dates[1:5]
+a <- bday_list_df$dates[1:5]
+```
+
+
+
+```{r}
+bday_list_df$dates <- strptime(bday_list_df$dates, "%m/%d/%y")
+```
+
+
+```{r}
+bday_list_df$dates[1:5]
+```
+
+```{r}
+ggplot(data = bday_list_df, aes(x = dates))+
+  geom_histogram()
+```
+
+
+## New trials using lubridate
+
+```{r}
+bday_list_df <- read.csv("birthdaysExample.csv",stringsAsFactors = FALSE)
+head(bday_list_df)
+```
+
+```{r}
+str(bday_list_df)
+```
+
+```{r}
+bday_list_df$dates <- mdy(bday_list_df$dates)
+str(bday_list_df)
+```
+
+```{r}
+head(bday_list_df)
+```
+
+#### Creating three new columns with day, month and year
+
+```{r}
+bday_list_df$Day <- day(bday_list_df$dates)
+bday_list_df$Month <- month(bday_list_df$dates)
+bday_list_df$Year <- year(bday_list_df$dates)
+head(bday_list_df)
+```
+
+
+### To check how many of many friends have same birthday as mine?
+
+```{r}
+same_bday <- filter(bday_list_df, Day == 22 & Month == 11)
+nrow(same_bday)
+```
+
+### Which month contains the most number of birthdays?
+
+```{r}
+# Converting 1 to 12 numbers as factors
+bday_list_df$ofMonth <- ordered(bday_list_df$Month, levels = c(1:12))
+str(bday_list_df)
+```
+```{r}
+head(bday_list_df)
+```
+
+```{r}
+ggplot(data = bday_list_df, aes(x = ofMonth)) +
+  geom_bar()+
+  labs(x = "Birthday Month", y = "Number of birthdays", title = "Number of birthdays in each month")
+```
+
+__Using table()__
+
+```{r}
+table(bday_list_df$ofMonth)
+```
+
+```{r}
+
+```
+
+
+### How many birthdays are in each month?
+
+```{r}
+bday_list_df %>%
+  group_by(ofMonth) %>%
+  summarise(Bdays_each_month = n())
+```
+
+### Do you have at least 365 friends that have birthdays on everyday of the year??
+
+```{r}
+bdays <- bday_list_df %>%
+  select(Day,Month)
+
+uniq_bdays <- unique(bdays)
+nrow(uniq_bdays)
+```
+
+Which day of the year has the most number of birthdays?
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -5,7 +5,7 @@ Lesson 4 : Explore Two variables
 ```{r}
 #pf <- read.csv("pseudo_facebook.tsv", sep = '\t')
 
-pf <- read.delim("pseudo_facebook.tsv")
+pf <- read.delim("pseudo_facebook.tsv", stringsAsFactors = FALSE)
 names(pf)
 ```
 
@@ -13,12 +13,22 @@ names(pf)
 head(pf)
 ```
 
+```{r}
+str(pf)
+```
+
+```{r}
+pf$gender <- factor(pf$gender)
+head(pf)
+```
+
 
 ### Loading libraries
 
 ```{r}
-library(dplyr)
+suppressMessages(library(dplyr))
 library(ggplot2)
+library(tidyr)
 ```
 
 ***
@@ -130,11 +140,11 @@ Add a __layer__ to the plot that transforms friend_count using the square_root f
 
 Also switch back to __geom_point()__ from __geom_jitter()__. 
 As it is showing error when used with geom_jitter().
-If we wanted to add  __geom_jitter()__ to the code we had to put more eleaborate syntaxes to specify that we only wanted to jitter the ages. We have to be careful because if we add jitter to friend_count hten those people having zero(0) friend_count may have negative value for the friend_count.
+If we wanted to add  __geom_jitter()__ to the code we had to put more elaborate syntaxes to specify that we only wanted to jitter the ages. We have to be careful because if we add jitter to friend_count hten those people having zero(0) friend_count may have negative value for the friend_count.
 
 And these may lead to square root resulting in imaginary values *i*. So to make this adjustment we pass the position parameter as 'position = position_jitter(h = 0)' where h is the minimum height. Hence it prevents us from getting the warnings and -ve error counts. 
 
-__Rememeber jitter can add +ve or -ve noise to each of our points.__ 
+__Remember jitter can add +ve or -ve noise to each of our points.__ 
 
 #### Look up the documentation for coord_trans() and add a layer to the plot that transforms friend_count using the square root function. Create your plot!
 
@@ -242,41 +252,81 @@ head(pf.fc_by_age2)
 Create your plot!
 
 ```{r Conditional Means Plot}
-
+ggplot(data = pf.fc_by_age2, aes(x = age, y = friend_count_mean2)) +
+  geom_point()+
+  geom_line()
 ```
 
 ***
 
 ### Overlaying Summaries with Raw Data
-Notes:
+Notes: Ggplot allows us to easily create various summaries of our data and plot them. This could be
+especially useful for quick exploration and for combining plots of raw data, like our original scatter
+plot with displaying summaries.
+
+This plot is one of those displaying summaries and I want to be able
+to display it over the original plot we had for friend_count versus age. 
+
+Let's see that first original scatter plot again. Now since all these points are black, I'm going to change the color of these. So that way when I overlay the summary, it's easier to see. 
+
+I'm going to make the color here orange. So now, I've got my scatter plot and I want to overlay the summary that we have from before. I want to put this on top of this. I can add a geom_line to our plot to do so. Here I'm __going to pass the parameter stat and set it equal to summary__, and I'm going to __give it a function for y__. 
+
+__The fun.y parameter takes any type of function, so that way we can apply it to the y values__. In this case, I want to take the mean. 
+
+And there it is, this is my summary line for the mean friend count by age, over my raw data or my scatter plot.
+
 
 ```{r Overlaying Summaries with Raw Data}
-
+ggplot(data = pf, aes(x = age, y = friend_count)) +
+  geom_point(alpha = 1/20, position = position_jitter(h = 0), color = 'orange') +
+  coord_cartesian(xlim = c(13,90))+
+  coord_trans(y = 'sqrt')+
+  geom_line(stat = 'summary', fun.y = mean) +
+  geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = 0.9), color = 'blue', linetype = 2 ) +
+  geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = 0.2), color = 'blue', linetype = 'dotdash' ) +
+  geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = 0.5), color = 'blue', linetype = 'solid' )
+  
 ```
 
+- geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = 0.9), color = 'blue', linetype = 2 ) : 90% of users lie below this point.
+- geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = 0.9), color = 'blue', linetype = 2 ) : This ddenotes the median
+
 #### What are some of your observations of the plot?
-Response:
+Response: Having more than 1000 users is very rare even for very young users.
+
+To use coord_cartesian() layer need to remove the __xlim__ layer and the __coord_trans(y = 'sqrt')__ layer.
+I need to obseve users between age of 13 and 70 and for friend_count 90th percentile is 1000 so taking ylim as c(0,1000).
+
+
+```{r}
+ggplot(data = pf, aes(x = age, y = friend_count)) +
+  geom_point(alpha = 1/20, position = position_jitter(h = 0), color = 'orange') +
+  coord_cartesian(xlim = c(13,70), ylim = c(0,1000) )+
+  geom_line(stat = 'summary', fun.y = mean) +
+  geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = 0.9), color = 'blue', linetype = 2 ) +
+  geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = 0.2), color = 'blue', linetype = 'dotdash' ) +
+  geom_line(stat = 'summary', fun.y = quantile, fun.args = list(probs = 0.5), color = 'blue', linetype = 'solid' )
+```
+
+From 35 to 60 year old front count falls below 250. So 90% of people in this age group have friends below 250.
 
 ***
 
-### Moira: Histogram Summary and Scatterplot
-See the Instructor Notes of this video to download Moira's paper on perceived audience size and to see the final plot.
-
-Notes:
-
-***
 
 ### Correlation
 Notes:
 
 ```{r Correlation}
-
+cor(pf$age, pf$friend_count)
 ```
 
 Look up the documentation for the cor.test function.
 
-What's the correlation between age and friend count? Round to three decimal places.
-Response:
+```{r}
+cor.test(pf$age, pf$friend_count, method = 'pearson')
+```
+
+
 
 ***
 
@@ -284,7 +334,7 @@ Response:
 Notes:
 
 ```{r Correlation on Subsets}
-with(                 , cor.test(age, friend_count))
+with( pf, cor.test(age, friend_count, method = 'pearson'))
 ```
 
 ***
