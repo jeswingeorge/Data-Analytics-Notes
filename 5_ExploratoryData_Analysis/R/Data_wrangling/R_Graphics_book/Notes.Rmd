@@ -1,0 +1,177 @@
+---
+title: "R_graphics_codebook"
+author: "Jeswin"
+date: "27 September 2017"
+output: html_document
+---
+
+```{r}
+# Loading libraries
+library(ggplot2)
+library(tidyr)
+suppressMessages(library(dplyr))
+suppressMessages(library(gridExtra))
+library(hexbin)
+```
+
+# Dealing with Overplotting
+pg- 84
+
+With large data sets, the points in a scatter plot may obscure each other and prevent the viewer from accurately assessing the distribution of the data. This is called __overplotting__.
+
+If there's a high degree of overplotting, there are a number of possible solutions:
+- Make the points semitransparent
+- Bin the data into rectangles (better for quantitative analysis)
+- Bin the data into hexagons
+- Use box plots
+
+```{r}
+data(diamonds)
+summary(diamonds)
+```
+```{r}
+names(diamonds)
+```
+
+The scatter plot in Figure  contains about 54,000 points. They are heavily overplotted, making it impossible to get a sense of the relative density of points in different areas of the graph:
+
+```{r}
+sp <- ggplot(data = diamonds, aes(x = carat , y = price)) 
+
+sp + geom_point()
+```
+
+## Make the points semitransparent
+
+```{r}
+# Transparency = 90%  i.e., alpha = (1/10) = 0.1
+p1 <- sp + geom_point(alpha = 0.1)  
+
+# Transparency = 99%  i.e., alpha = (1/100) = 0.01
+p2 <- sp + geom_point(alpha = 0.01)
+
+grid.arrange(p1, p2 , ncol = 2)
+```
+
+we can see that there are vertical bands at nice round values of carats, indicating that diamonds tend to be cut to those sizes. Still, the data is so dense that even when the points are 99% transparent, much of the graph appears solid black, and the data distribution is still somewhat obscured.
+
+
+## Bin the data into rectangles (better for quantitative analysis)
+
+Another solution is to bin the points into rectangles and map the density of the points to the fill color of the rectangles, as shown in Figure.
+
+With the binned visualization, the vertical bands are barely visible. The density of points in the lower-left corner is much greater, which tells us that the vast majority of diamonds are small and inexpensive.
+
+By default, __stat_bin_2d()__ divides the space into 30 groups in the x and y directions, for a total of 900 bins. In the second version, we increase the number of bins with bins=50.
+
+The default colors are somewhat difficult to distinguish because they don't vary much in luminosity. In the second version we set the colors by using __scale_fill_gradient()__ and __specifying the low and high colors__.
+
+__By default, the legend doesn't show an entry for the lowest values__. This is __because the range of the color scale starts not from zero, but from the smallest nonzero quantity in a bin-probably 1__, in this case.
+
+__To make the legend show a zero , we can __manually set the range from 0 to the maximum, 6000, using limits__.
+
+
+```{r}
+p3 <- sp + stat_bin_2d()  # By default bin size = 30
+
+p4 <- sp + stat_bin_2d(bins = 50)+
+  scale_fill_gradient(low = 'lightblue', high = 'red', limits = c(0,6000))
+
+grid.arrange(p3,p4,ncol=2)
+```
+
+## Bin the data into hexagons
+
+Another method is to bin the data into hexagons instead of rectangles, with stat_binhex().
+
+For both of these methods, if you manually specify the range, and there is a bin that falls outside that range because it has too many or too few points, that bin will show up as grey rather than the color at the high or low end of the range.
+
+```{r}
+p5 <- sp + stat_binhex()+
+  scale_fill_gradient(low = 'lightblue', high = 'red', limits = c(0,8000))
+
+p6 <- sp + stat_binhex()+
+  scale_fill_gradient(low = 'lightblue', high = 'red', breaks = c(0,500,1000,2000,3000,4000,5000,6000), limits = c(0,6000))
+
+grid.arrange(p5,p6,ncol=1)
+
+```
+
+
+
+```{r}
+data(ChickWeight)
+summary(ChickWeight)
+```
+```{r}
+head(ChickWeight)
+```
+
+## Use box plots
+
+__Overplotting can also occur when the data is discrete on one or both axes. In these cases, you can randomly jitter the points with position_jitter()__. 
+
+__By default the amount of jitter is 40% of the resolution of the data in each direction, but these amounts can be controlled with width and height.__
+
+```{r}
+sp1 <- ggplot(data = ChickWeight, aes(x=Time, y=weight))
+
+spp1 <- sp1 + geom_point()
+
+spp2 <- sp1 + geom_point(position = 'jitter')
+# Could also use geom_jitter(), which is equivalent
+
+
+spp3 <- sp1 + geom_point(position=position_jitter(width=.5, height=0))
+
+grid.arrange(spp1, spp2, spp3, ncol=1)
+```
+
+
+#### When the data has one discrete axis and one continuous axis, it might make sense to use box plots,
+
+
+This will convey a different story than a standard scatter plot because it will obscure the number of data points at each location on the discrete axis. This may be problematic in some cases, but desirable in others.
+
+__With the ChickWeights data, the x-axis is conceptually discrete, but since it is stored numerically, ggplot() doesn't know how to group the data for each box. If you don't tell it how to group the data, you get a result like the graph__ :
+
+```{r}
+sp1 + geom_boxplot()
+```
+
+
+To tell __it how to group the data, use __aes(group=...)__. In this case, we'll group by each distinct value of Time:
+
+```{r}
+sp1 + geom_boxplot(aes(group=Time))
+```
+
+
+Instead of binning the data, it may be useful to display a 2D density estimate : 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

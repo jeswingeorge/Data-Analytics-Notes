@@ -1,0 +1,91 @@
+---
+title: "cut_function"
+author: "Jeswin"
+date: "29 September 2017"
+output: html_document
+---
+# Cut function
+
+## What situation is cut useful in?
+
+```{r}
+clinical.trial <-
+    data.frame(patient = 1:100,              
+               age = rnorm(100, mean = 60, sd = 8),
+               year.enroll = sample(paste("19", 85:99, sep = ""),
+                 100, replace = TRUE))
+
+head(clinical.trial)
+```
+
+```{r}
+summary(clinical.trial)
+```
+
+Now, we will use the cut function to make age a factor, which is what R calls a categorical variable. 
+
+Our __first example calls cut with the breaks argument set to a single number__. This method will __cause cut to break up age into 4 intervals__. The default labels use standard mathematical notation for open and closed intervals.
+
+```{r}
+# basic usage of cut with a numeric variable
+c1 <- cut(clinical.trial$age, breaks = 4)
+table(c1)
+```
+
+```{r}
+## year.enroll is a factor, so must convert to numeric first!
+c2 <- cut(as.numeric(as.character(clinical.trial$year.enroll)), breaks = 3)
+table(c2)
+```
+
+Well, the intervals that cut chose by default are not the nicest looking with the age example, although they are fine with the year example, since it was already discrete. Luckily, we can specify the exact intervals we want for age. Our next example shows how.
+
+```{r}
+## specify break points explicitly using seq function
+## look what seq does  
+seq(30, 80, by = 10)
+```
+
+```{r}
+## cut the age variable using the seq defined above
+c1 <- cut(clinical.trial$age, breaks = seq(30, 80, by = 10))
+## table of the resulting factor           
+table(c1)
+```
+
+That looks pretty good. There is no reason that the breaks argument has to be equally spaced as I have done above. It could be any grouping that you want.
+
+Finally, I am going to show you an __example of a custom R function to categorize ages. It uses cut inside of it, but does some preprocessing and uses the labels argument to cut to make the output look nice__.
+
+```{r}
+age.cat <- function(x, lower = 0, upper, by = 10,
+                   sep = "-", above.char = "+") {
+
+ labs <- c(paste(seq(lower, upper - by, by = by),
+                 seq(lower + by - 1, upper - 1, by = by),
+                 sep = sep),
+           paste(upper, above.char, sep = ""))
+
+ cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf),
+     right = FALSE, labels = labs)
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

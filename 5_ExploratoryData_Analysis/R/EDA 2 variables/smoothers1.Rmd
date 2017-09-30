@@ -1,0 +1,164 @@
+---
+title: "smoothers1"
+author: "Jeswin"
+date: "28 September 2017"
+output: html_document
+---
+
+# Types of smoothers
+
+[Types of smoothers blog](https://stats.idre.ucla.edu/r/faq/how-can-i-explore-different-smooths-in-ggplot2/)
+
+Also refer: R-Intro :Ch - 11 --> (Statistical Models in R)
+
+```
+Although points and lines of raw data can be helpful for exploring and understanding data, it can be difficult to tell what the overall trend or patterns are. 
+Adding data summaries can make it much easier to see the overall trend or patterns.
+
+When working with two or more variables, rather than raw summaries such as means, we can use conditional means or expected values of one variable based on some model.
+```
+
+To demonstrate this
+- data set that is built into R, the 'mtcars' data.
+- Specifically, we will look at the relationship between miles per gallon (mpg) and horsepower (hp). in 32 different cars.
+
+```{r}
+data("mtcars")
+head(mtcars)
+```
+
+```{r}
+names(mtcars)
+```
+
+
+```{r}
+# loading libraries
+suppressMessages(library(ggplot2))
+library(methods)
+
+```
+
+```{r}
+p <- ggplot(data = mtcars, aes(x = hp, y = mpg))+
+  geom_point()
+p
+```
+
+One thing to notice is that into the 'p' object, we saved both the basic plot setup and the request to add points. This saves typing down the road if we know we always want points plotted in our graph. 
+
+A quick __visual of the data indicates the relationship may not be linear__. This is confirmed when we __look at a linear smooth. The fit is poor at the extremes__.
+
+```{r}
+## looking at a linear fit, we see it is poor at the extremes
+p + stat_smooth(method = 'lm', formula = y~x , size = 1)
+```
+
+
+To get a sense of something like the mean miles per gallon at every level of horsepower, we can instead use a locally weighted regression.
+
+```{r}
+p + stat_smooth(method = 'loess', formula = y~x, size = 1)
+```
+
+Looking at the fit, __it seems a quadratic function might be a good approximation__. We can go back to a linear model, but change the formula to include a squared term for x (which is horse power here).
+
+```{r}
+p + stat_smooth(method = 'lm', formula = y~x + I(x^2), size = 1)
+```
+
+We could achieve the same results using orthogonal polynomials, in this case with a second order (quadratic) polynomial. The advantage is that the __poly() function can easily fit polynomials of arbitrary degree__.
+
+```{r}
+p + stat_smooth(method = 'lm', formula = y~poly(x,2), size = 1)
+```
+
+Another flexible aspect of the smooths is that it can use many different modelling functions as long as they follow some common conventions. This opens up access to many R packages to fit very specialized models. For the sake of demonstration, we will try a __generalized additive model (GAM)__ from the 'mgcv' package with a smooth on the x predictor variable. First we load the required package, and then show how it is easily used inside our graph.
+
+```{r}
+require(mgcv)
+```
+```{r}
+## we now fit a GAM adding a penalized smoother with x
+p + stat_smooth(method = 'gam', formula = y ~ s(x), size=1)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

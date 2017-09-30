@@ -1,0 +1,155 @@
+---
+title: "conversion btw wide 2 long"
+author: "Jeswin"
+date: "29 September 2017"
+output: html_document
+---
+
+# Reference: [Converting data between wide and long format](http://www.cookbook-r.com/Manipulating_data/Converting_data_between_wide_and_long_format/)
+
+There are two sets of methods that are explained below:
+
+- gather() and spread() from the tidyr package. This is a newer interface to the reshape2 package.
+- melt() and dcast() from the reshape2 package.
+
+```{r}
+library(tidyr)
+library(reshape2)
+suppressMessages(library(dplyr))
+```
+
+
+# Sample data : wide
+
+```{r}
+olddata_wide <- read.table(header=TRUE, text='
+ subject sex control cond1 cond2
+       1   M     7.9  12.3  10.7
+       2   F     6.3  10.6  11.1
+       3   F     9.5  13.1  13.8
+       4   M    11.5  13.4  12.9
+')
+
+# Make sure the subject column is a factor
+olddata_wide$subject <- factor(olddata_wide$subject)
+olddata_wide
+```
+
+```{r}
+olddata_long <- read.table(header=TRUE, text='
+ subject sex condition measurement
+       1   M   control         7.9
+       1   M     cond1        12.3
+       1   M     cond2        10.7
+       2   F   control         6.3
+       2   F     cond1        10.6
+       2   F     cond2        11.1
+       3   F   control         9.5
+       3   F     cond1        13.1
+       3   F     cond2        13.8
+       4   M   control        11.5
+       4   M     cond1        13.4
+       4   M     cond2        12.9
+')
+# Make sure the subject column is a factor
+olddata_long$subject <- factor(olddata_long$subject)
+olddata_long
+```
+
+# tidyr
+
+## From wide to long : gather()
+
+```{r}
+olddata_wide
+```
+
+```
+ The arguments to gather():
+ - data: Data object
+ - key: Name of new key column (made from names of data columns)
+ - value: Name of new value column
+ - ...: Names of source columns that contain values
+ - factor_key: Treat the new key column as a factor (instead of character vector)
+ - na.rm : If TRUE, will remove rows from output where the value column in NA.
+```
+```{r}
+data_long <- gather(olddata_wide, key = 'condition', value = 'measurement', control:cond2, factor_key=TRUE)
+data_long
+```
+
+### Trying using dplyr and tidyr
+
+```{r}
+data_long_dplr <- olddata_wide %>%
+  gather(key = 'condition', value = 'measurement', control:cond2, factor_key=TRUE)
+data_long_dplr
+```
+
+- In this example, the source columns that are gathered are specified with __control:cond2__. This means to use all the columns, positionally, between control and cond2. 
+
+- Another way of doing it is to name the columns individually, as in:
+```
+gather(olddata_wide, condition, measurement, control, cond1, cond2)
+```
+- If you need to use gather() programmatically, you may need to use variables containing column names. To do this, you should use the gather_() function instead, which takes strings instead of bare (unquoted) column names.
+
+```
+keycol <- "condition"
+valuecol <- "measurement"
+gathercols <- c("control", "cond1", "cond2")
+
+gather_(olddata_wide, keycol, valuecol, gathercols)
+```
+
+## From long to wide : Use spread()
+
+```
+# The arguments to spread():
+# - data: Data object
+# - key: Name of column containing the new column names
+# - value: Name of column containing values
+```
+
+```{r}
+data_wide_td <- spread(olddata_long, key = condition, value = measurement)
+data_wide_td
+```
+
+
+# reshape2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

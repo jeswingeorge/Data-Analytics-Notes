@@ -1,0 +1,410 @@
+---
+title: "L6-Problem_set_2_variables"
+author: "Jeswin"
+date: "27 September 2017"
+output: html_document
+---
+
+```{r}
+# Loading libraries
+library(ggplot2)
+library(tidyr)
+suppressMessages(library(dplyr))
+suppressMessages(library(gridExtra))
+library(hexbin)
+```
+
+## 1. Price vs x : create a scatterplot of price vs x.
+
+```{r}
+data("diamonds")
+summary(diamonds)
+```
+
+```{r}
+str(diamonds)
+```
+
+```{r}
+names(diamonds)
+```
+
+```{r}
+ggplot(data = diamonds, aes(x = x, y = price)) +
+  geom_point(alpha = 1/20)
+```
+
+#### Notice some outliers and an exponential relationship between price and x
+
+## 2. Find correlation
+
+```{r}
+with(diamonds, cor.test(price,x))
+```
+
+```{r}
+with(diamonds, cor.test(price,y))
+```
+
+```{r}
+with(diamonds, cor.test(price,z))
+```
+
+## 3. Create a simple scatter plot of price vs depth.
+
+```{r}
+ggplot(data = diamonds, aes(x = depth, y = price))+
+  geom_point(alpha = 1/20) 
+  
+```
+
+
+## 5. Adjustments - price vs. depth
+
+Change the code to make the transparency of the points to be 1/100 of what they are now and mark the x-axis every 2 units.
+
+```{r}
+ggplot(data = diamonds, aes(x = depth, y = price))+
+  geom_point(alpha = 1/100)+
+  scale_x_continuous(breaks = seq(54,70,2), limits = c(54,70))
+```
+
+## 7. Correlation - price and depth
+
+```{r}
+with(diamonds, cor.test(price,depth))
+```
+
+## 8 price vs. carat
+
+Create a scatterplot of price vs carat and omit the top 1% of price and carat values.
+
+```{r}
+ggplot(data = diamonds, aes(y=price, x=carat))+
+  geom_point()+
+  ylim(0, quantile(diamonds$price, 0.99))+
+  xlim(0, quantile(diamonds$carat, 0.99))
+```
+
+
+## 9. price vs. volume
+
+Create a scatterplot of price vs. volume (x * y * z). Create a new variable for volume in the diamonds data frame.
+
+```{r}
+diamonds <- diamonds %>% 
+  mutate(volume = x * y * z)
+```
+
+```{r}
+str(diamonds)
+```
+
+```{r}
+ggplot(data = diamonds, aes(x = volume, y = price))+
+  geom_point()
+
+```
+
+Did you notice some outliers? Some volumes are 0! There's an expensive diamond with a volume near 4000, and a cheaper diamond with a volume near 900.
+
+You can find out how many diamonds have 0 volume by using count(diamonds$volume == 0). The count() function comes with the plyr package.
+
+
+Note: If you ran the count function from plyr, you need to run this command in R to unload the plyr package.
+
+```
+detach("package:plyr", unload=TRUE)
+```
+
+The plyr package will conflict with the dplyr package in later exercises.
+
+Depending on your investigation, it may or may not be important for you to understand how outliers, like these, came to be in your data.
+
+
+```{r}
+ggplot(data = diamonds, aes(x = volume, y = price))+
+  stat_binhex()+
+  scale_fill_gradient(low = 'lightblue', high = 'red')+
+  xlim(0,800)
+```
+
+```{r}
+subd <- subset(diamonds, volume>0 & volume<800 )
+with(subd, cor.test(price,volume))
+```
+
+## Adjustments - price vs. volume
+
+Subset the data to exclude diamonds with a volume greater than or equal to 800. Also, exclude diamonds with a volume of 0. Adjust the transparency of the points and add a linear model to the plot.
+
+```{r}
+ggplot(data = subd, aes(y = price, x = volume))+
+  geom_point(alpha = 1/20)+
+  geom_smooth(method = 'lm', formula = y~poly(x,2) )
+```
+
+
+
+```{r}
+require(mgcv)
+library(methods)
+```
+
+```{r}
+ggplot(data = subd, aes(y = price, x = volume))+
+  geom_point(alpha = 1/20)+
+  stat_smooth(method = 'gam', formula = y~s(x), size=1 )  # small s
+```
+
+
+## 13 Mean price by clarity
+
+Use the function dplyr package to create a new data frame containing  info on diamonds by clarity.
+
+Name the data frame diamondsByClarity
+The data frame should contain the following variables in this order.
+
+(1) mean_price
+(2) median_price
+(3) min_price
+(4) max_price     
+(5) n
+
+where n is the number of diamonds in each level of clarity.
+
+
+```{r}
+diamondsByClarity <- diamonds %>%
+  group_by(clarity) %>%
+  summarise(mean_price = mean(price),
+            median_price = median(price), 
+            min_price = min(price),
+            max_price = max(price),
+            n = n())
+
+head(diamondsByClarity)
+```
+
+
+
+## 14 Bar Charts of Mean Price
+
+We've created summary data frames with the mean price by clarity and color. You can run the code in R to  verify what data is in the variables diamonds_mp_by_clarity  and diamonds_mp_by_color.
+
+Your task is to write additional code to create two bar plots on one output image using the grid.arrange() function from the package gridExtra.
+
+```{r}
+diamonds_by_clarity <- group_by(diamonds, clarity)
+diamonds_mp_by_clarity <- summarise(diamonds_by_clarity, mean_price = mean(price))
+
+diamonds_by_color <- group_by(diamonds, color)
+diamonds_mp_by_color <- summarise(diamonds_by_color, mean_price = mean(price))
+
+diamonds_mp_by_cut <- diamonds %>%
+  group_by(cut) %>%
+  summarise(mean_price = mean(price))
+```
+
+```{r}
+p1 <- ggplot(data = diamonds_mp_by_clarity, aes(x = clarity, y = mean_price)) +
+  geom_col()
+
+p1
+```
+
+```{r}
+p2 <- ggplot(data = diamonds_mp_by_color, aes(x = color, y = mean_price)) +
+  geom_col()
+p2
+```
+```{r}
+p3 <- ggplot(data = diamonds_mp_by_cut, aes(x = cut, y = mean_price))+
+  geom_col()
+
+p3
+```
+
+```{r}
+grid.arrange(p1,p2,p3,ncol=1)
+```
+
+Observe : think something odd is going here. These trends seem to go against our intuition.
+
+__Mean price tends to decrease as clarity improves. The same can be said for color.__
+
+***
+
+## 16 [Gapminder Revisited](http://www.gapminder.org/data/)
+
+examine pairs of variable and create 2-5 plots that make use of the techniques from Lesson 4.
+
+```{r}
+# Loading libraries
+library(xlsx)
+library(rJava)
+library(xlsxjars)
+```
+
+
+```{r}
+female_bmi <- read.xlsx('Indicator_BMI female ASM.xlsx', sheetName = 'Data', header = TRUE)
+male_bmi <- read.xlsx('Indicator_BMI male ASM.xlsx', sheetName = 'Data', header = TRUE)
+```
+
+### Selecting countries in which i am interested
+
+```{r}
+fm_bmi <- filter(female_bmi, Country %in% c('Bangladesh', 'India', 'Pakistan', 'Russia', 'United Kingdom', 'United States', 'United Arab Emirates'))
+m_bmi <- filter(male_bmi, Country %in% c('Bangladesh', 'India', 'Pakistan', 'Russia', 'United Kingdom', 'United States', 'United Arab Emirates') )
+#rm(female_bmi,male_bmi)
+```
+
+```{r}
+fm_india <- subset(fm_bmi, Country == 'India')
+fm_india_tr <- data.frame(t(fm_india))
+rm(fm_india)
+
+m_india <- subset(m_bmi, Country == 'India')
+m_india_tr <- data.frame(t(m_india))
+rm(m_india)
+```
+
+
+```
+# Alternative for turning rownames into a column
+# load data table
+library(data.table)
+# create datable from dataframe
+setDT(transposed_data, keep.rownames = TRUE)[]
+# rename the first column to 'Year'
+names(transposed_data)[[1]] <- "Year"
+```
+#### [Difference between data.frame() and as.data.frame()](https://stackoverflow.com/questions/21574250/difference-between-as-data-framex-and-data-framex)
+#### [How to change a character of each elememt of a column](https://stackoverflow.com/questions/21187603/replace-characters-from-a-column-of-a-data-frame-r)
+    Tried to replace 'X1998' to '1998'
+
+## Female BMI india
+```{r}
+library(data.table)
+setDT(fm_india_tr, keep.rownames = TRUE)[]
+names(fm_india_tr)[[1]] <- "Years"
+fm_india_tr <- fm_india_tr[2:30, ]
+fm_india_tr$Years <- gsub('X','',fm_india_tr$Years)   # to remove 'X' from each element of column from 'X2000' to '2000'
+names(fm_india_tr)[[2]] <- "Female_BMI"
+head(fm_india_tr)
+```
+
+```{r}
+str(fm_india_tr)
+```
+
+[To convert from a factor array to a numeric array or conversion b/w different data types](http://www.cookbook-r.com/Manipulating_data/Converting_between_vector_types/)
+The way to get the text values converted to numbers is to first convert it to a character, then a numeric vector.
+
+```{r}
+fm_india_tr$Years <- as.numeric(as.character(fm_india_tr$Years))
+fm_india_tr$Female_BMI <- as.numeric(as.character(fm_india_tr$Female_BMI))
+str(fm_india_tr)
+```
+
+## Male BMI India
+
+```{r}
+setDT(m_india_tr, keep.rownames = TRUE)[]
+names(m_india_tr)[[1]] <- "Years"
+m_india_tr <- m_india_tr[2:30, ]
+m_india_tr$Years <- gsub('X','',m_india_tr$Years)   # to remove 'X' from each element of column from 'X2000' to '2000'
+names(m_india_tr)[[2]] <- "Male_BMI"
+head(m_india_tr)
+```
+
+```{r}
+m_india_tr$Years <- as.numeric(as.character(m_india_tr$Years))
+m_india_tr$Male_BMI <- as.numeric(as.character(m_india_tr$Male_BMI))
+str(m_india_tr)
+```
+
+## Merging the 2 dataframes m_india_tr and fm_india_tr to India_BMI with help of Years column
+
+```{r}
+India_BMI <- merge(m_india_tr, fm_india_tr, by = "Years")
+head(India_BMI)
+```
+## Making line graph with multiple lines
+
+```{r}
+Indiag_BMI <- gather(India_BMI, key = 'Gender', value = 'BMI', Male_BMI, Female_BMI)
+head(Indiag_BMI,10)
+```
+
+```{r}
+ggplot(data = Indiag_BMI, aes(x = Years, y = BMI, group = Gender, color = Gender))+
+  geom_line()+
+  geom_point()+
+  scale_x_continuous(limits = c(1980,2008), breaks = seq(1980,2008,2))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

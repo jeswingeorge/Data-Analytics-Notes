@@ -1,0 +1,161 @@
+---
+title: "reshape2 package"
+author: "Jeswin"
+date: "29 September 2017"
+output: html_document
+---
+# An Introduction to reshape2
+Ref : [Blog](http://seananderson.ca/2013/10/19/reshape.html)
+
+## What makes data wide or long?
+
+__Wide data__ has a column for each variable. For example, this is wide-format data:
+
+```
+#   ozone   wind  temp
+# 1 23.62 11.623 65.55
+# 2 29.44 10.267 79.10
+# 3 59.12  8.942 83.90
+# 4 59.96  8.794 83.97
+```
+
+And this is long-format data:
+
+```
+#    variable  value
+# 1     ozone 23.615
+# 2     ozone 29.444
+# 3     ozone 59.115
+# 4     ozone 59.962
+# 5      wind 11.623
+# 6      wind 10.267
+# 7      wind  8.942
+# 8      wind  8.794
+# 9      temp 65.548
+# 10     temp 79.100
+# 11     temp 83.903
+# 12     temp 83.968
+```
+
+Long-format data has a column for possible variable types and a column for the values of those variables. Long-format data isn't necessarily only two columns. For example, we might have ozone measurements for each day of the year. In that case, we could have another column for day.
+
+The ultimate shape you want to get your data into will depend on what you are doing with it.
+
+It turns out that you need wide-format data for some types of data analysis and long-format data for others. In reality, you need long-format data much more commonly than wide-format data. For example, ggplot2 requires long-format data (technically tidy data), plyr requires long-format data, and most modelling functions (such as lm(), glm(), and gam()) require long-format data. But people often find it easier to record their data in wide format.
+
+
+## The reshape2 package
+
+'reshape2' is based around two key functions: __melt__ and __cast__:
+
+__melt__ takes wide-format data and melts it into long-format data.
+
+__cast__ takes long-format data and casts it into wide-format data.
+
+Think of working with metal: if you melt metal, it drips and becomes long. If you cast it into a mould, it becomes wide.
+
+
+## Wide- to long-format data: the melt function
+
+For this example we'll work with the __airquality__ dataset that is built into R. First we'll change the column names to lower case to make them easier to work with. Then we'll look at the data:
+
+```{r}
+library(reshape2)
+data(airquality)
+summary(airquality)
+names(airquality) <- tolower(names(airquality))
+head(airquality)
+```
+
+
+```{r}
+aql <- melt(airquality) # [a]ir [q]uality [l]ong format
+head(aql)
+```
+
+```{r}
+tail(aql)
+```
+
+By default, __melt__ has assumed that all columns with numeric values are variables with values. Often this is what you want. Maybe here we want __to know the values of ozone, solar.r, wind, and temp for each month and day__. We can __do that with melt by telling it that we want month and day to be "ID variables". ID variables are the variables that identify individual rows of data__.
+
+# Long format example
+
+```{r}
+aql <- melt(airquality, id.vars = c("month", "day"))
+head(aql)
+```
+
+## Long- to wide-format data: the cast functions
+
+Whereas going from wide- to long-format data is pretty straightforward, going from long- to wide-format data can take a bit more thought. It usually involves some head scratching and some trial and error for all but the simplest cases. 
+
+In reshape2 there are multiple cast functions. Since you will most commonly work with data.frame objects, we'll explore the __dcast function__. (There is also acast to return a vector, matrix, or array.)
+
+Let's take the long-format airquality data and cast it into some different wide formats.
+
+dcast uses a formula to describe the shape of the data. The arguments on the left refer to the ID variables and the arguments on the right refer to the measured variables. Coming up with the right formula can take some trial and error at first. So, if you're stuck don't feel bad about just experimenting with formulas. There are usually only so many ways you can write the formula.
+
+Here, we need to tell __dcast__ that month and day are the ID variables (we want a column for each) and that variable describes the measured variables. Since there is only one remaining column, dcast will figure out that it contains the values themselves. We could explicitly declare this with __value.var__. (And in some cases it will be necessary to do so.)
+
+```{r}
+aql <- melt(airquality, id.vars = c("month", "day"))
+aqw <- dcast(aql, month + day ~ variable)
+head(aqw)
+```
+
+
+```{r}
+head(airquality) # original data
+```
+
+So, besides re-arranging the columns, we've recovered our original data.
+
+One confusing "mistake" you might make is casting a dataset in which there is more than one value per data cell. For example, this time we __won't include day as an ID variable__:
+
+```{r}
+dcast(aql, month ~ variable)
+```
+
+
+When you run this in R, you'll notice the warning message:
+```
+# Aggregation function missing: defaulting to length
+```
+
+And if you look at the output, the cells are filled with the number of data rows for each month-climate combination. The numbers we're seeing are the number of days recorded in each month. 
+
+When you cast your data and there are multiple values per cell, you also need to tell dcast how to aggregate the data. For example, maybe you want to take the mean, or the median, or the sum. Let's try the last example, but this time we'll take the mean of the climate values. 
+
+We'll also pass the option na.rm = TRUE through the ... argument to remove NA values. 
+
+__The ... let's you pass on additional arguments to your fun.aggregate function, here mean.__
+
+
+```{r}
+dcast(aql, month ~ variable, fun.aggregate = mean, 
+  na.rm = TRUE)
+```
+
+
+## dcast() is used as we want our result to be a dataframe. if we wanted it to be matrix/array use acast()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
