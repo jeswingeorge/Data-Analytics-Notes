@@ -241,7 +241,7 @@ examine pairs of variable and create 2-5 plots that make use of the techniques f
 
 ```{r}
 # Loading libraries
-library(xlsx)
+suppressMessages(library(xlsx))
 library(rJava)
 library(xlsxjars)
 ```
@@ -258,7 +258,10 @@ male_bmi <- read.xlsx('Indicator_BMI male ASM.xlsx', sheetName = 'Data', header 
 fm_bmi <- filter(female_bmi, Country %in% c('Bangladesh', 'India', 'Pakistan', 'Russia', 'United Kingdom', 'United States', 'United Arab Emirates'))
 m_bmi <- filter(male_bmi, Country %in% c('Bangladesh', 'India', 'Pakistan', 'Russia', 'United Kingdom', 'United States', 'United Arab Emirates') )
 #rm(female_bmi,male_bmi)
+
 ```
+
+### Selecting only India
 
 ```{r}
 fm_india <- subset(fm_bmi, Country == 'India')
@@ -343,18 +346,130 @@ ggplot(data = Indiag_BMI, aes(x = Years, y = BMI, group = Gender, color = Gender
   geom_line()+
   geom_point()+
   scale_x_continuous(limits = c(1980,2008), breaks = seq(1980,2008,2))
+
+```
+
+From the figure we observe that in India, women seem to have higher BMI than male. Though that was not the case in earlier 1980s. After 1980s BMI of male population started declining rapidly whereas That of female population in INdia has been on constant rise. After 1991 there has been improvement in the BMI of male population.
+
+### Plotting BMI for males of selected countries 
+
+__m_bmi dataframe__  
+
+```{r}
+m_bmi <- m_bmi %>%
+  gather(key = 'Years', value = 'BMI', 2:30 )
+m_bmi$Years <- gsub('X','',m_bmi$Years)
+```
+
+Comparing BMI of males of the selected countries
+
+```{r fig.width = 12, fig.height= 7}
+ggplot(data = m_bmi, aes(x = Years, y = BMI))+
+  geom_line(aes(color = Country, group = Country))
+
+#ggsave('male_bmi.png')
+```
+
+From the graph, we see that US, UAE and UK have the highest male BMI and it is increasing at a steady rate from 1980.
+In case of Russia the BMI of males remained almost constant till 2000 and then it started increasing .
+COuntries like Pakistan, India and Bangladesh had comparatively lower BMI.
+
+#### Comparing BMI of females of the selected countries
+
+__fm_bmi__
+
+```{r}
+fm_bmi <- fm_bmi %>%
+  gather(key = 'Years', value = 'BMI', 2:30)
+fm_bmi$Years <- gsub('X','',fm_bmi$Years)
+```
+
+
+```{r fig.width = 12, fig.height= 7}
+ggplot(data = fm_bmi, aes(x = Years, y = BMI))+
+  geom_line(aes(color = Country, group = Country))
+#ggsave('female_bmi.png')
+```
+
+For female :
+From fig, BMI of UAE is higher than other countries. Earlier in 1980s BMI of Russia was higher than that of US but after 1992 BMI of US increased at a ateady rate as compared to that of russia whose BMI decreased comparatively during that time and is increasing steadily after that.
+
+
+# Additional Graphs
+
+### What is the BMI over time all over the world?
+
+Converting to long format form.
+
+```{r}
+male_bmi <- male_bmi %>%
+  gather(key = 'Years', value = 'BMI', 2:30)
+male_bmi$Years <- gsub('X','',male_bmi$Years)
+
+female_bmi <- female_bmi %>%
+  gather(key = 'Years', value = 'BMI', 2:30)
+female_bmi$Years <- gsub('X','',female_bmi$Years)
+
+```
+
+### For males
+```{r fig.width=12, fig.height=11}
+ggplot(data = male_bmi, aes(x = BMI)) +
+  geom_histogram(color = 'black', fill = 'white')+
+  facet_wrap( ~ Years, ncol = 4)+
+  labs(title = 'BMI over the years around the world', x = 'Years', y =  'Count(BMI)' )
+
+```
+
+Over the years, the histograms seem to follow a bimodal distribution.
+
+
+Also refer [full_join, semi_join, etc ](https://rpubs.com/NateByers/Merging)
+Also refer this [blog more important egs](https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html)
+
+full_join() includes all observations from x and y dataframes.
+
+```{r}
+world_bmi <- full_join(male_bmi, female_bmi)
+```
+
+### Global BMI Population between 1980 - 2008.
+
+```{r}
+ggplot(data = world_bmi, aes(x = BMI))+
+  geom_histogram(color = 'black', fill = 'lightblue')
 ```
 
 
 
 
+```{r}
+ggplot(data = world_bmi, aes(x = BMI))+
+  geom_freqpoly(aes(group = Gender, color = Gender))
+```
+
+```{r}
+ggplot(data = world_bmi, aes(x = Gender, y = BMI, color = Gender))+
+  geom_boxplot()+
+  scale_y_continuous(limits = c(20,30))
+```
+
+
+Women seem to have a slightly higher BMI overall than males.
 
 
 
+```{r fig.width=10, fig.height==8}
+ggplot(data = world_bmi, aes(x = Years, y = BMI))+
+  geom_line(aes(group = Gender, color = Gender))+
+  scale_x_discrete(breaks = seq(1980,2008,1))
+```
 
+This one is not much helpful
 
+#### Finished
 
-
+***
 
 
 

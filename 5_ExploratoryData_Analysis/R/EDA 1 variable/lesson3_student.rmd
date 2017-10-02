@@ -41,7 +41,7 @@ ggplot(aes(x = dob_day), data = pf) +
 
 ***
 ### Faceting
-Notes:
+Notes: We can break this histogram into twelve histograms, one for each month of the year. The code would look like this. First, I'm going to add a layer and that layer is going to be called facet wrap. Facet wrap takes a formula where we have a tilde, and then we're going to use the variable that we're going to split our data over.
 
 ```{r Faceting}
 ggplot(data = pf, aes(x = dob_day)) +

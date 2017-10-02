@@ -1,0 +1,288 @@
+---
+title: "Lines(ggplot2"
+author: "Jeswin"
+date: "1 October 2017"
+output: html_document
+---
+
+[Blog](http://www.cookbook-r.com/Graphs/Lines_(ggplot2)/)
+
+# Lines(ggplot2)
+```{r}
+# loading libraries 
+library(ggplot2)
+library(gridExtra)
+suppressMessages(library(dplyr))
+```
+
+
+## With one continuous and one categorical axis
+
+```{r}
+# Some sample data
+dat <- read.table(header = TRUE, text = '
+                  cond  result 
+                  Control 10
+                  treatment 11.5
+                  ')
+dat
+```
+
+## Lines that go all the way across
+
+These use __geom_hline__ because the y-axis is the continuous one, but it is also possible to use geom_vline (with xintercept) if the x-axis is continuous
+
+```{r}
+# Basic bar graph
+bp <- ggplot(dat, aes(x=cond, y=result)) +
+    geom_bar(position=position_dodge(), stat="identity")
+
+# Add a horizontal line
+bp2 <- bp + geom_hline(aes(yintercept = 12))
+
+# Make the line red and dashed
+bp3 <- bp + geom_hline(aes(yintercept = 12), color = '#990000', linetype = 'dashed')
+
+grid.arrange(bp,bp2,bp3, ncol=3)
+
+```
+
+## Separate lines for each categorical value
+
+To make separate lines for each bar, use __geom_errorbar__. 
+The error bars have no height - 'ymin=ymax' . 
+It also seems necessary to specify y for some reason, even though it doesn't do anything.
+
+```{r}
+dat$hline <- c(9,12)
+dat
+```
+
+### [Dodging in ggplot2](http://ggplot2.tidyverse.org/reference/position_dodge.html)
+
+Dodging preserves the vertical position of an geom while adjusting the horizontal position.
+By default, dodging preserves the total width. You can choose to preserve the width of each element:
+
+```{r}
+# Need to re-specify bp, because the data has changed
+p1 <- bp <- ggplot(dat, aes(x=cond, y=result)) +
+    geom_bar(position=position_dodge(), stat="identity")
+
+# Draw with separate lines for each bar
+p2 <- bp + geom_errorbar(aes(ymax=hline, ymin=hline), colour="#AA0000")
+
+# Make the lines narrower
+p3 <- bp + geom_errorbar(width=0.5, aes(ymax=hline, ymin=hline), colour="#AA0000")
+
+grid.arrange(p1,p2,p3,ncol=3)
+```
+
+Can get the same result, even if we get the hline values from a second data frame. Define data frame with hline
+
+```{r}
+dat_hlines <- data.frame(cond=c("control","treatment"), hline=c(9,12))
+dat_hlines
+```
+
+```{r}
+# The bars are from dat, but the lines are from dat_hlines
+bp + geom_errorbar(data=dat_hlines, aes(y = NULL, ymax=hline, ymin=hline), colour="#AA0000")
+```
+
+## Lines over grouped bars
+
+It is possible to add lines over grouped bars. In this example, there are actually four lines (one for each entry for hline), but it looks like two, because they are drawn on top of each other. I don't think it's possible to avoid this, but it doesn't cause any problems.
+
+```{r}
+dat <- read.table(header=TRUE, text='
+     cond group result hline
+  control     A     10     9
+treatment     A   11.5    12
+  control     B     12     9
+treatment     B     14    12
+')
+dat
+```
+
+```{r}
+# Define basic bar plot
+bp <- ggplot(dat, aes(x=cond, y=result, fill=group)) +
+    geom_bar(position=position_dodge(), stat="identity")
+
+
+# The error bars get plotted over one another -- there are four but it looks
+# like two
+bp2 <- bp + geom_errorbar(aes(ymax=hline, ymin=hline), linetype="dashed")
+
+grid.arrange(bp,bp2, ncol=2)
+
+```
+
+# Lines over individual grouped bars
+```{r}
+# Define basic bar plot
+bp <- ggplot(dat, aes(x=cond, y=result, fill=group)) +
+    geom_bar(position=position_dodge(), stat="identity")
+
+
+bp + geom_errorbar(aes(ymax=hline, ymin=hline), linetype="dashed",
+                   position=position_dodge())
+```
+
+
+
+
+
+# With two continuous axes
+
+Sample data used here:
+
+```{r}
+dat <- read.table(header=TRUE, text='
+      cond xval yval
+   control 11.5 10.8
+   control  9.3 12.9
+   control  8.0  9.9
+   control 11.5 10.1
+   control  8.6  8.3
+   control  9.9  9.5
+   control  8.8  8.7
+   control 11.7 10.1
+   control  9.7  9.3
+   control  9.8 12.0
+ treatment 10.4 10.6
+ treatment 12.1  8.6
+ treatment 11.2 11.0
+ treatment 10.0  8.8
+ treatment 12.9  9.5
+ treatment  9.1 10.0
+ treatment 13.4  9.6
+ treatment 11.6  9.8
+ treatment 11.5  9.8
+ treatment 12.0 10.6
+')
+```
+
+
+```{r fig.width=9}
+# The basic scatterplot
+sp <- ggplot(dat, aes(x=xval, y=yval, colour=cond)) + geom_point()
+
+# Add a horizontal line
+hsp <- sp + geom_hline(aes(yintercept=10))
+
+# Add a red dashed vertical line
+vsp <- sp + geom_hline(aes(yintercept=10)) +
+    geom_vline(aes(xintercept=11.5), colour="#BB0000", linetype="dashed")
+
+grid.arrange(sp, hsp, vsp, ncol=3)
+```
+
+
+## Drawing lines for the mean
+
+It is also possible to compute a mean value for each subset of data, grouped by some variable. The group means would have to be computed and stored in a separate data frame, and the easiest way to do this is to use the dplyr package. Note that the y range of the line is determined by the data.
+
+```{r}
+lines <- dat %>%
+  group_by(cond) %>%
+  summarise(
+    x = mean(xval),
+    ymin = min(yval),
+    ymax = max(yval)
+  )
+
+```
+
+```{r}
+# Add colored lines for the mean xval of each group
+# Add colored lines for the mean xval of each group
+sp + geom_hline(aes(yintercept=10)) +
+     geom_linerange(aes(x=x, y=NULL, ymin=ymin, ymax=ymax), data=lines)
+
+```
+
+## Using lines with facets
+
+Normally, if you add a line, it will appear in all facets.
+
+```{r}
+# Facet, based on cond
+spf <- sp + facet_grid(. ~ cond)
+spf
+
+```
+
+```{r}
+# Draw a horizontal line in all of the facets at the same value
+spf + geom_hline(aes(yintercept=10))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

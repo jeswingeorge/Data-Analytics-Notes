@@ -1,0 +1,199 @@
+---
+title: "Problem_set_Multi_variable"
+author: "Jeswin"
+date: "1 October 2017"
+output: html_document
+---
+```{r}
+# loading libraries
+library(ggplot2)
+library(tidyr)
+suppressMessages(library(dplyr))
+suppressMessages(library(gridExtra))
+```
+
+```{r}
+# laoding data
+data('diamonds')
+summary(diamonds)
+```
+
+## 1. Price Histograms with Facet and Color
+
+Create a histogram of diamond prices. Facet the histogram by diamond color and use cut to color the histogram bars. Note that the plot in the linked image is using log(price) for the x-axis to adjust for positive skew in the data.
+
+The plot should look something [like this](http://i.imgur.com/b5xyrOu.jpg). 
+
+Note: In the link, a color palette of type  'qual' was used to color the histogram using __ scale_fill_brewer(type = 'qual') __.
+
+```{r fig.width=10}
+ggplot(data = diamonds, aes(x=price, fill=cut))+
+  geom_histogram() +
+  scale_x_log10() +
+   scale_fill_brewer(type='qual')+
+  facet_wrap( ~ color)
+```
+
+## 2. Price vs. Table Colored by Cut
+
+Create a scatterplot of diamond price vs. table and color the points by the cut of the diamond.
+
+ The plot should look something [like this](http://i.imgur.com/rQF9jQr.jpg)
+
+```{r fig.width=11}
+ggplot(data=diamonds, aes(y=price, x=table, color = cut))+
+  geom_point()
+```
+
+
+## 3. Typical Table Value
+
+```{r}
+table(diamonds$cut)
+```
+
+```{r}
+summary(diamonds$table)
+```
+
+
+```{r}
+range(diamonds$table)
+```
+
+
+## 4. Price vs. Volume and Diamond Clarity
+
+Create a scatterplot of diamond price vs. volume (x * y * z) and color the points by the clarity of diamonds. 
+
+Use scale on the y-axis to take the log10 of price. You should also  omit the top 1% of diamond volumes from the plot.
+
+Note: Volume is a very rough approximation of a diamond's actual volume.
+
+The plot should look something [like this](http://i.imgur.com/excUpea.jpg)
+Note: In the link, a color palette of type 'div' was used to color the scatterplot using __scale_color_brewer(type = 'div')__
+[scale_color_brewer()](http://ggplot.yhathq.com/docs/scale_color_brewer.html)
+
+```{r}
+diamonds$volume <- diamonds$x * diamonds$y * diamonds$z
+
+
+ggplot(data = subset(diamonds, volume<quantile(volume,0.99)), aes(y=price, x=volume, color = clarity))+
+  geom_point()+
+  scale_y_log10()+
+  scale_color_brewer(type = 'div')
+```
+
+## 5. Proportion of Friendships Initiated
+
+```{r}
+pf <- read.delim('pseudo_facebook.tsv')
+```
+
+Many interesting variables are derived from two or more others. 
+
+For example, we might wonder how much of a person's network on a service like Facebook the user actively initiated. Two users with the same degree (or number of friends) might be very different if one initiated most of those connections on the  service, while the other initiated very few. So it could be useful to consider this proportion of existing friendships that  the user initiated. This might be a good predictor of how active  a user is compared with their peers, or other traits, such as personality (i.e., is this person an extrovert?).
+
+Your task is to create a new variable called 'prop_initiated' in the Pseudo-Facebook data set. The variable should contain the proportion of friendships that the user initiated.
+
+```{r}
+pf$prop_initiated <- pf$friendships_initiated/pf$friend_count
+```
+
+## 6. prop_initiated vs. tenure
+
+Create a line graph of the median proportion of friendships initiated ('prop_initiated') vs. tenure and color the line segment by year_joined.bucket.
+
+Recall, we created year_joined.bucket in Lesson 5 by first creating year_joined from the variable tenure. Then, we used the cut function on year_joined to create four bins or cohorts of users.
+(2004, 2009], (2009, 2011], (2011, 2012], (2012, 2014]
+
+The plot should look something like [this](http://i.imgur.com/vNjPtDh.jpg). OR [this](http://i.imgur.com/IBN1ufQ.jpg).
+
+```{r}
+# Creating 2 new variables 
+pf$year_joined <- 2014 - ceiling(pf$tenure/365)
+pf$year_joined.bucket <- cut(pf$year_joined, c(2004,2009,2011,2012,2014) )
+table(pf$year_joined.bucket)
+```
+
+Creating the plot
+
+```{r fig.width=9}
+p <- ggplot(data = subset(pf, !is.na(year_joined.bucket)), aes(x = tenure, y=prop_initiated, color=year_joined.bucket))+
+  geom_line(stat = 'summary', fun.y = median)
+p
+```
+
+## 7 Smoothing prop_initiated vs. tenure
+
+Smooth the last plot you created of of prop_initiated vs tenure colored by year_joined.bucket. You can bin together ranges of tenure or add a smoother to the plot.
+
+```{r}
+# Done by adding a smoother
+p + geom_smooth(linetype = 'solid')
+```
+
+```{r}
+# Doing by binning together  ranges of tenure
+
+p1 <- ggplot(data = subset(pf, !is.na(year_joined.bucket)), aes(x = 50 * round(tenure/50) , y=prop_initiated, color=year_joined.bucket))+
+  geom_line(stat = 'summary', fun.y = median)
+p1
+```
+
+
+
+
+### Adding lines to graphs Important
+[Adding hline,vline, etc.](http://www.cookbook-r.com/Graphs/Lines_(ggplot2)/)
+
+## 9 Largest Group Mean prop_initiated
+
+```{r}
+avg_pf_grp <- subset(pf, !is.na(prop_initiated)) %>%
+  group_by(year_joined.bucket) %>%
+  summarise(AVerage = mean(prop_initiated))
+
+avg_pf_grp
+```
+
+## 10. Price/Carat Binned, Faceted, & Colored
+
+Create a scatter plot of the price/carat ratio of diamonds. The variable x should be assigned to cut. The points should be colored by diamond color, and the plot should be faceted by clarity.
+
+[The plot should look something like this](http://i.imgur.com/YzbWkHT.jpg)
+
+Note: In the link, a color palette of type 'div' was used to color the histogram using __scale_color_brewer(type = 'div')__.
+
+```{r fig.width=9}
+# Insert the new variable
+diamonds <- diamonds %>%
+  mutate(ratio_Price_Carat = price/carat)
+
+ggplot(data = diamonds, aes(x = cut, y = ratio_Price_Carat))+
+  geom_jitter(aes(color = color, group = color))+
+  facet_wrap( ~ clarity)+
+  scale_color_brewer(type = 'div')
+  
+```
+
+## 11 Gapminder Multivariate Analysis
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

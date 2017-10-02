@@ -1,0 +1,218 @@
+---
+title: "Notes"
+author: "Jeswin"
+date: "1 October 2017"
+output: html_document
+---
+
+```{r}
+# loading libraries
+library(ggplot2)
+library(tidyr)
+suppressMessages(library(dplyr))
+suppressMessages(library(gridExtra))
+suppressMessages(library(gcookbook))
+```
+
+```{r}
+# laoding data
+data("mtcars")
+data("cabbage_exp")
+summary(mtcars)
+```
+```{r}
+str(mtcars)
+```
+
+```{r}
+str(cabbage_exp)
+```
+
+# Mapping Variables to Colors
+
+__to use a variable (column from a data frame) to control the color of geoms.__
+
+Observe here __geom_col()__ was used instead of geom_bar()
+
+```{r}
+ggplot(data = cabbage_exp, aes(x=Date, y=Weight))+
+  geom_col(aes(fill=Cultivar), color = 'black', position = 'dodge')
+```
+In the cabbage_exp example, the variable Cultivar is mapped to fill. The Cultivar column in cabbage_exp is a factor, so ggplot2 treats it as a discrete variable.
+
+***
+
+```{r}
+ggplot(data = mtcars, aes(x=wt, y = mpg))+
+  geom_point(aes(color = cyl))
+```
+
+In the mtcars example, cyl is numeric, so it is treated as a continuous variable. Because of this, even though the actual values of cyl include only 4, 6, and 8, the legend has entries for the intermediate values 5 and 7.
+
+To make ggplot() treat cyl as a categorical variable, you can convert it to a factor in the call to ggplot(), or you can modify the
+data so that the column is a character vector or factor
+```{r}
+mtcars$cyl <- factor(mtcars$cyl)  # Converted that column as a facor variable: check using str
+
+ggplot(data = mtcars, aes(x=wt, y = mpg))+
+  geom_point(aes(color = cyl))
+```
+
+# Using a Different Palette for a Discrete Variable
+
+to use different colors for a discrete mapped variable.
+
+```{r}
+data('uspopage') # Age distribution of population in the United States, 1900-2002
+summary(uspopage)
+```
+```{r}
+str(uspopage)
+```
+
+#### here we'll use the default palette (hue)
+
+__scale_fill_hue() and  scale_colour_hue()  : Colors evenly spaced around the color wheel (same as discrete)__
+
+```{r}
+p <- ggplot(data = uspopage, aes(x=Year, y=Thousands, fill = AgeGroup)) + geom_area()
+p
+```
+
+```
+# These three have the same effect (as shown above)
+p
+p + scale_fill_discrete()
+p + scale_fill_hue()
+```
+
+Using a ColorBrewer palette
+
+#### scale_fill_brewer() scale_colour_brewer() ColorBrewer palettes
+
+```{r}
+p + scale_fill_brewer()
+```
+
+- Changing a palette is a modification of the color (or fill) scale: it involves a change in the mapping from numeric or categorical values to aesthetic attributes. 
+
+- There are two types of scales that use colors: __fill__ scales and __color__ scales.
+
+With __scale_fill_hue()__, the colors are taken from around the color wheel in the HCL (hue-chroma-lightness) color space. 
+The default lightness value is 65 on a scale from 0-100. This is good for filled areas, but it's a bit light for points and lines.
+
+To make the colors darker for points and lines, as in Figure below, __set the value of l (luminance/lightness)__ :
+
+```{r fig.width=9}
+data('heightweight')
+#summary(heightweight)
+
+h <- ggplot(data = heightweight, aes(x=ageYear, y=heightIn, color = sex))+
+  geom_point()
+
+h2 <- h + scale_fill_hue(l = 45)+
+  labs(title = 'Using scale_fill_hue() and lightness l')
+
+grid.arrange(h,h2,ncol=2)
+```
+
+The ColorBrewer package provides a number of palettes. You can generate a graphic showing all of them, as shown:
+
+#### scale_fill_brewer doesnt run when loading the below library
+
+```
+library(RColorBrewer)
+display.brewer.all()
+```
+
+ColorBrewer palettes can be selected by name. For example, this will use the Oranges palette :
+
+```{r}
+p + scale_fill_brewer(palette="Oranges")
+```
+
+
+You can also use a __palette of greys__. This is useful for print when the output is in black and white. The default is to start at 0.2 and end at 0.8, on a scale from 0 (black) to 1 (white), but you can change the range
+
+```{r fig.width=11, fig.height=7}
+g1 <- p + scale_fill_grey()
+g2 <- p + scale_fill_grey(start=0.7, end=0)
+
+grid.arrange(g1,g2,ncol=2)
+```
+
+```{r}
+p + scale_fill_brewer(type = 'qual')
+```
+
+So if type = 'qual' not given the function automatically creates a graph with same color but light intensity decreasing with the ordfer of the factor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
