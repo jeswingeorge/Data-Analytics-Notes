@@ -1,0 +1,225 @@
+---
+title: "Edureka_linear_Reg"
+author: "Jeswin"
+date: "4 October 2017"
+output: html_document
+---
+
+# Linear Regression Example
+
+```{r}
+library(ggplot2)
+suppressMessages(library(dplyr))
+library(tidyr)
+suppressMessages(library(gridExtra))
+suppressMessages(library(GGally))
+library(RColorBrewer)
+suppressMessages(library(scales))
+suppressMessages(library(memisc))
+suppressMessages(library(car))
+suppressMessages(library(MASS))
+suppressMessages(library(caTools))
+library(lattice)
+library(car)
+```
+
+### Real estate consultation firm has the data comprising price of apartments in Boston. Based on this data, company wants to decide the price of new apartments 
+
+
+#### Data Acquisition
+```{r}
+data(Boston)  # from MASS library
+summary(Boston)
+```
+
+Split the dataset into training and testing dataset in the ratio 70:30.
+
+```{r}
+set.seed(2)
+split <- sample.split(Boston$medv,SplitRatio = 0.7)
+
+training_data <- subset(Boston, split == TRUE)
+testing_data <- subset(Boston, split == FALSE)
+```
+
+
+```{r fig.width=11, fig.height=8}
+# lattice library
+splom(~Boston[c(1:6,14)],groups = NULL, data = Boston, axis.line.tck=0,axis.text.alpha = 0)
+```
+
+```{r}
+splom(~Boston[c(7:14)],groups = NULL, data = Boston, axis.line.tck=0,axis.text.alpha = 0)
+```
+
+```{r}
+# studying rm and medv
+plot(training_data$rm,training_data$medv)
+abline(lm(training_data$medv~training_data$rm), col='red')  # regression fit line
+```
+
+
+```{r fig.width=11, fig.height=8}
+Boston_df <- Boston %>%
+  dplyr::select(1:6,14)   # select fn of dplyr was masked by select of MASS library
+                          # To avoid such problems 
+
+ggpairs(data = Boston_df)
+```
+
+- Both these plots shows a +ve linear trend between __rm(average number of rooms)__ and __medv(value of home)__.
+- crim vs medv is coming down non-linearly.
+- nox vs medv is also making a negative impact
+- No relevant relationship between indus and medv
+
+To find correlation relationship among different variables use:
+```{r}
+cr <- cor(Boston)
+cr
+```
+
+For visualizing the above :
+
+```{r}
+library(corrplot)
+corrplot(cr,type='lower')
+```
+
+```{r fig.width=10, fig.height=9}
+corrplot(cr,method='number')
+```
+
+
+From figure values in dark blue is highly correlated and values in red is negatively correlated.
+
+- medv and rm are +vely correlated.
+- medv and lstat are negatively correlated.
+
+
+### finding multicollinearity
+
+```{r}
+suppressMessages(library(caret))
+
+# to exclude medv(output)
+Boston_a = subset(Boston, select = -c(medv) )
+numericData <- Boston_a[sapply(Boston_a, is.numeric)]
+descrCor <- cor(numericData)
+
+```
+
+
+
+Using VIF(variance inflation factor) to detect multicollinearity
+
+#### Implement model
+
+ . below means that all independant variables must be included.
+
+```{r}
+model <- lm(medv~., data = training_data)
+vif(model)
+```
+
+- __VIF__ of 1 means there is no correlation among variables.
+- If __vif__ is very high => its highly correlated.
+- nox, indux and dis are moderately correlated.
+- Here, rad and tax have higher variance factor values indicating high muticollinearity.
+
+To draw a corrgram
+
+```{r}
+suppressMessages(library(corrgram))
+corrgram(cr)
+```
+
+
+
+```{r}
+summary(model)
+```
+
+As per our summary the eqn representing our regression line is :
+
+```
+medv = 36.46 + 3.81*rm
+```
+
+#### Optimize model
+
+Let's build a model with the help of training set using the code below. And excluding indus and age.
+
+```{r}
+model <- lm(medv ~ crim + zn + chas + nox + rm + dis + ptratio + black + lstat, data = training_data)
+summary(model)
+```
+
+The Adjusted R-squared value  remains almost same.
+
+Now we can use our model to predict the output of our testing data.
+
+We can use the following code for predicting the output.
+
+```{r}
+predic <- predict(model,testing_data)
+predic
+```
+
+#### Model validation
+
+
+```{r}
+plot(testing_data$medv, type = 'l',lty=1.8, col = 'green')
+lines(predic, type = 'l',col = 'blue')
+```
+
+Now as the blue and green lines are very close this implies that the prediction is coming very nicely.
+
+##### Now we can use this model to predict the output of sample dataset
+
+```{r}
+#predic <- predict(model, sample_data)
+#predic
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

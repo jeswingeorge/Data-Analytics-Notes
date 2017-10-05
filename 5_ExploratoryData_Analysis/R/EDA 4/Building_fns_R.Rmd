@@ -1,0 +1,74 @@
+---
+title: "Building_fns"
+author: "Jeswin"
+date: "3 October 2017"
+output: html_document
+---
+
+# Creating a function
+
+```{r}
+set.seed(100)   # So that test data is satable and re-running the code we get the same result 
+d <- rpois(25,8) # Sample of poisson distribution with 25 samples and 8 degrees of freedom
+d
+```
+
+Now even if we regenerate the dataset multiple times we get the same dataset.
+
+## Structure of a function
+
+__Function name : __ GetMeanandSE
+
+Provide a function object __x__ to the name using a function declaration
+
+```{r}
+GetMeanandSE <- function(x){
+  m <- mean(x)
+  n <- length(x)
+  SE <- sd(x)/sqrt(n)
+}
+
+GetMeanandSE(d)
+```
+
+ The above function wont give any result. As not given return type.
+ 
+ 
+ 
+```{r}
+GetMeanandSE <- function(x){
+  m <- mean(x)
+  n <- length(x)
+  SE <- sd(x)/sqrt(n)
+  return(c(m,SE))
+}
+GetMeanandSE(d)
+```
+
+From the output it is not clear what each of the output is. To correct this.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

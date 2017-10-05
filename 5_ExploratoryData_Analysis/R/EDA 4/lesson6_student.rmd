@@ -1,5 +1,10 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
 # Lesson 6 : Diamonds And Price predictions
-========================================================
+
 
 ```{r}
 library(ggplot2)
@@ -7,7 +12,12 @@ suppressMessages(library(dplyr))
 library(tidyr)
 suppressMessages(library(gridExtra))
 suppressMessages(library(GGally))
+library(RColorBrewer)
 ```
+
+[Solomon's blog: Analysis oof diamonds datsset](https://solomonmessing.wordpress.com/2014/01/19/visualization-series-the-scatterplot-or-how-to-use-data-so-you-dont-get-ripped-off/)
+
+[Github link](https://github.com/SolomonMg/diamonds-data)
 
 ```{r}
 # load data
@@ -38,57 +48,94 @@ Response: On seeing the  graph above we can make out that it is a non-linear rel
 
 ***
 
-### Frances Gerety
-Notes:
-
-#### A diamonds is
-
-
-***
-
-### The Rise of Diamonds
-Notes:
-
-***
-
 ### ggpairs Function
 Notes:
 
 ```{r ggpairs Function}
 # install these if necessary
-install.packages('GGally')
-install.packages('scales')
-install.packages('memisc')
-install.packages('lattice')
-install.packages('MASS')
-install.packages('car')
-install.packages('reshape')
-install.packages('plyr')
+#install.packages('GGally')
+#install.packages('scales')
+#install.packages('memisc')
+#install.packages('lattice')
+#install.packages('MASS')
+#install.packages('car')
+#install.packages('reshape2')
 
 # load the ggplot graphics package and the others
-library(ggplot2)
-library(GGally)
-library(scales)
-library(memisc)
+suppressMessages(library(scales))
+suppressMessages(library(memisc))
+suppressMessages(library(car))
+suppressMessages(library(MASS))
+```
 
+
+```{r fig.width=12, fig.height=11}
 # sample 10,000 diamonds from the data set
 set.seed(20022012)
-diamond_samp <- diamonds[sample(1:length(diamonds$price), 10000), ]
-ggpairs(diamond_samp, 
+diamond_samp <- diamonds[sample(1:length(diamonds$price),10000), ]
+ggpairs(diamond_samp,  axisLabels = 'internal',
         lower = list(continuous = wrap("points", shape = I('.'))), 
         upper = list(combo = wrap("box", outlier.shape = I('.'))))
 ```
 
+In the lower triangle of the plot matrix, it __uses grouped histograms for qualitative, qualitative pairs__ and __scatter plots for quantitative, quantitative pairs__.
+
+In the upper triangle, it __plots grouped histograms for qualitative, qualitative pairs, this time using the x instead of the y variable as the grouping factor__.
+
+__Box plots for qualitative, quantitative pairs__, and it __provides the correlation for quantitative-quantitative pairs__.
+
+#### Remember that our goal is to understand the price of diamonds. So, let's focus on that.
+
 What are some things you notice in the ggpairs output?
-Response:
+
+Response: We can see what might be relationships between price and clarity and price and color, which we'll keep in mind for later when start modelling our data.  You might remember this when you create the box plots in problem set three. 
+
+Be that as it may, __the critical factor driving price is the size, or the carat weight of the diamond__. As we saw at the start of the lesson, the relationship between price and diamond size is nonlinear. What might explain this pattern? 
+
+On the supply side, larger continuous chunks of diamonds without significant flaws are probably harder to find than smaller ones. This might help explain the sort of exponential looking curve,
+ 
+Of course, this is related to the fact that the weight of a diamond is a function of volume, and volume is a function of the length times the
+width times the height of a diamond, and this suggests that we might be especially interested in the cube root of carat weight. I
 
 ***
 
 ### The Demand of Diamonds
 Notes:
 
-```{r The Demand of Diamonds}
+On the demand side, customers in the market for a less expensive, smaller diamond are probably more sensitive to price than more well-to-do buyers. Many less than one carat customers would surely never buy a diamond.
 
+And there are fewer customers who can afford a bigger diamond that is one that is larger than than one carat, hence we shouldn't expect the market for bigger diamonds to be as competitive as the one for smaller diamonds. So it makes sense that the variants As well as the price would
+increase with carat size.
+
+#####  Create two histograms of the price variable and place them side by side on one output image. 
+The first plot should be a histogram of price and the second plot should transform the price variable using log10.
+
+```{r fig.width=10}
+
+plot1 <- ggplot(diamonds, aes(x = price)) + 
+  geom_histogram(binwidth=100) +
+  labs(title='Price')
+
+# Here i am converting prices to log
+plot2 <- ggplot(diamonds, aes(x = log10(price))) + 
+  geom_histogram(binwidth = 0.25) +
+  labs(title='Price(log10)')
+
+grid.arrange(plot1, plot2, ncol=2)
+```
+
+```{r}
+plot1 <- ggplot(diamonds, aes(x = price)) + 
+  geom_histogram(binwidth = 100) +
+  labs(title='Price')
+
+# Here i am converting prices to log
+plot2 <- ggplot(diamonds, aes(x = price)) + 
+  geom_histogram(binwidth = 0.1) +
+  scale_x_log10()+
+  labs(title='Price(log10)')
+
+grid.arrange(plot1, plot2, ncol=2)
 ```
 
 ***
@@ -96,20 +143,38 @@ Notes:
 ### Connecting Demand and Price Distributions
 Notes:
 
+Indeed we can see that the prices for diamonds are pretty heavily skewed, but when you put those prices on a log ten scale, they seem much better behaved. They're __much closer to the bell curve of a normal distribution__. We can even see a __little bit of evidence of bimodality on this log10 scale. Which is consistent with our two class rich buyer-poor buyer speculation about the nature of customers for diamonds__. You actually saw a sneak peek of this in problem set set three when you looked at the log10 of price by cut.
+(Took facet_wrap)
+
+```{r}
+ggplot(data = diamonds, aes(x = price))+
+  geom_histogram(binwidth = 0.1,color = 'black', fill = '#00FFFF')+
+  scale_x_log10() +
+  facet_wrap( ~ cut, scales = "free_y")
+```
+
+
+
 ***
 
 ### Scatterplot Transformation
 
 ```{r Scatterplot Transformation}
-
+ggplot(diamonds, aes(x=carat, y=price))+
+  geom_point()+
+  scale_y_continuous(trans = log10_trans())+
+  labs(title='Price(log10 by Carat')
 ```
 
 
 ### Create a new function to transform the carat variable
 
 ```{r cuberoot transformation}
-cuberoot_trans = function() trans_new('cuberoot', transform = function(x) x^(1/3),
+cuberoot_trans = function(x) 
+  { trans_new('cuberoot', transform = function(x) x^(1/3),
                                       inverse = function(x) x^3)
+  }
+
 ```
 
 #### Use the cuberoot_trans function
@@ -127,14 +192,20 @@ ggplot(aes(carat, price), data = diamonds) +
 
 ### Overplotting Revisited
 
-```{r Sort and Head Tables}
+__Overplotting ;__ That's when multiple points take on the same value. This is often due to rounding.
 
+```{r}
+head(sort(table(diamonds$price), decreasing = T))
+```
+
+```{r}
+head(sort(table(diamonds$carat), decreasing = T))
 ```
 
 
 ```{r Overplotting Revisited}
 ggplot(aes(carat, price), data = diamonds) + 
-  geom_point() + 
+  geom_point(alpha = 0.5, position = 'jitter', size = 3/4) + 
   scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
                      breaks = c(0.2, 0.5, 1, 2, 3)) + 
   scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
@@ -142,22 +213,37 @@ ggplot(aes(carat, price), data = diamonds) +
   ggtitle('Price (log10) by Cube-Root of Carat')
 ```
 
+The plot gives us a better sense of how dense and how sparse our data is at key places.
+
 ***
 
 ### Other Qualitative Factors
 Notes:
 
+We can see what looks like a almost linear relationship between carat weight and price after doing some transformations, but surely there are other factors that influence the price of a diamond. When I was looking around at diamonds I noticed that clarity seemed to factor into price. 
+
+Of course, many consumers are looking for a diamond of a certain minimum size. So we shouldn't expect clarity to be as strong a factor as carat weight.
+
 ***
 
 ### Price vs. Carat and Clarity
 
-Alter the code below.
-```{r Price vs. Carat and Clarity}
-# install and load the RColorBrewer package
-install.packages('RColorBrewer')
-library(RColorBrewer)
+Let's see if clarity, cut, or color can explain some of the variants in price when we visualize it on our plot using color. 
 
-ggplot(aes(x = carat, y = price), data = diamonds) + 
+RColorBrewer provides three types of palettes: sequential, diverging and qualitative.
+
+- __Sequential palettes__ are suited to ordered data that progress from low to high.
+- __Diverging palettes__ are suited to centered data with extremes in either direction.
+- __Qualitative palettes__ are suited to nominal or categorical data.
+
+We'll start by examining clarity. This code visualizes price by carat. Adjust it to color the points by clarity
+
+[Blog on color palette](http://data.library.virginia.edu/setting-up-color-palettes-in-r/)
+[Type:sequential,diverging and qualitative](https://www.e-education.psu.edu/geog486/node/1867)
+[Another imp blog](http://www.personal.psu.edu/cab38/ColorSch/ASApaper.html)
+
+```{r Price vs. Carat and Clarity}
+ggplot(aes(x = carat, y = price,color = clarity), data = diamonds) + 
   geom_point(alpha = 0.5, size = 1, position = 'jitter') +
   scale_color_brewer(type = 'div',
     guide = guide_legend(title = 'Clarity', reverse = T,
@@ -174,39 +260,20 @@ ggplot(aes(x = carat, y = price), data = diamonds) +
 ### Clarity and Price
 Response:
 
+Clarity does seem to explain an awful lot of the remaining variance in price, after adding color to our plot. 
+
+Holding carat weight constant, we're looking at one part of the plot. We see the diamonds with lower clarity are almost always cheaper than diamonds with better clarity.
+
 ***
 
 ### Price vs. Carat and Cut
 
 Alter the code below.
 ```{r Price vs. Carat and Cut}
-ggplot(aes(x = carat, y = price, color = clarity), data = diamonds) + 
-  geom_point(alpha = 0.5, size = 1, position = 'jitter') +
-  scale_color_brewer(type = 'div',
-                     guide = guide_legend(title = 'Clarity', reverse = T,
-                                          override.aes = list(alpha = 1, size = 2))) +  
-  scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
-                     breaks = c(0.2, 0.5, 1, 2, 3)) + 
-  scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
-                     breaks = c(350, 1000, 5000, 10000, 15000)) +
-  ggtitle('Price (log10) by Cube-Root of Carat and Clarity')
-```
-
-***
-
-### Cut and Price
-Response:
-
-***
-
-### Price vs. Carat and Color
-
-Alter the code below.
-```{r Price vs. Carat and Color}
 ggplot(aes(x = carat, y = price, color = cut), data = diamonds) + 
   geom_point(alpha = 0.5, size = 1, position = 'jitter') +
   scale_color_brewer(type = 'div',
-                     guide = guide_legend(title = Cut, reverse = T,
+                     guide = guide_legend(title = 'Cut', reverse = T,
                                           override.aes = list(alpha = 1, size = 2))) +  
   scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
                      breaks = c(0.2, 0.5, 1, 2, 3)) + 
@@ -217,20 +284,63 @@ ggplot(aes(x = carat, y = price, color = cut), data = diamonds) +
 
 ***
 
+### Cut and Price
+Response:
+
+we don't see much variation on cut. Most of the diamonds in the data are ideal cut anyway, so we've lost the color pattern that we saw before.
+
+***
+
+### Price vs. Carat and Color
+
+Alter the code below.
+```{r Price vs. Carat and Color}
+ggplot(aes(x = carat, y = price, color = color), data = diamonds) + 
+  geom_point(alpha = 0.5, size = 1, position = 'jitter') +
+  scale_color_brewer(type = 'div',
+                     guide = guide_legend(title = 'Color',reverse = FALSE,
+                                          override.aes = list(alpha = 1, size = 2))) +  
+  scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
+                     breaks = c(0.2, 0.5, 1, 2, 3)) + 
+  scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
+                     breaks = c(350, 1000, 5000, 10000, 15000)) +
+  ggtitle('Price (log10) by Cube-Root of Carat and Color')
+```
+
+Here, I made four changes to the previous code. I replaced cut with color in the aesthetic wrapper. I also changed the legend title and the plot title, to use the word color. And finally, I removed the reverse parameter in the legend, so that the best color would be at the top of the list in the legend
+
+***
+
 ### Color and Price
 Response:
+
+Color does seem to explain some of the variance in price. Just like we saw with the clarity variable. Blue now however, states that the difference between all color grades from D to J are basically not noticeable to the naked eye. Yet, we do see the color difference in the price tag.
 
 ***
 
 ### Linear Models in R
 Notes:
 
+In R we create the models using the lm(). We need to supply a formula in the form of y~x. Here, y is the outcome variable and x is the explanatory variable
+ 
+ __lm(log(price) ~ carat^(1/3) )__
+
+Price is the outcome and carat is the predictor variable. We used our domain knowledge of diamonds and carat weight to take the cube root of carat weight (volume).
+
 Response:
 
 ***
 
 ### Building the Linear Model
-Notes:
+Notes: [Linear models and operators in R](http://data.princeton.edu/R/linearModels.html)
+
+Let's build up our linear model for price. store the first model in a variable called m1. 
+
+The "I" stands for as is. In this case, it tells R to use the expression inside the __"I" function to transform a variable before using it in the regression. This is instead of instructing R to interpret these symbols as part of the formula to construct the design matrix for the regression__.
+
+I can also update the previous model to add the carat variable in the regression, using the syntax. The real functional relationship is surely not as simple as the cubed root of carat, so we add a simple linear function of carat in our model
+predicting price. And we can continue to make more complex models by adding more variables. We add cut even though we don't expect it to have much influence on price. Next, we add color to a fourth model and clarity to a fifth. When we run the  code, we can see that we're getting some very nice R square values.
+
 
 ```{r Building the Linear Model}
 m1 <- lm(I(log(price)) ~ I(carat^(1/3)), data = diamonds)
@@ -238,22 +348,99 @@ m2 <- update(m1, ~ . + carat)
 m3 <- update(m2, ~ . + cut)
 m4 <- update(m3, ~ . + color)
 m5 <- update(m4, ~ . + clarity)
-mtable(m1, m2, m3, m4, m5)
+mtable(m1, m2, m3, m4, m5,sdigits = 3) 
+# sdigits = 3 ensures we get 3 significant digits
 ```
 
-Notice how adding cut to our model does not help explain much of the variance
-in the price of diamonds. This fits with out exploration earlier.
+```{r}
+m1
+```
+
+-  the intercept is the value of the response variable (in our case log10(price)) when all the input variables are zero. So for example, with m1, the intercept will be the starting price (or the log10 of the price) when we start with carat of 0.
+
+
+#### the intercept 
+
+It is the value of the response variable (in our case log10(price)) when all the input variables are zero. So for example, with m1, the intercept will be the starting price (or the log10 of the price) when we start with carat of 0.
+
+##### what's the values inside the parentheses under each coefficient? 
+
+The values found in the parentheses below each coefficient indicate the __standard error for the estimate of the coefficient__, while the __asterisks next to the coefficent values state whether or not the coefficients are statistically significant__.
+
+The hypothesis being tested here is whether or not the coefficient is significantly different from 0. One asterisk appears at a significance level of 0.05, with up to three appearing as the statistical significance approaches 0. As with traditional hypothesis tests, you can get coefficients that are very close to 0 but are treated as statistically significant, perhaps due to a large volume of data points, so don't just rely on the p-values and significance indicators when interpreting your results - make sure you look at the coefficient values as well.
+
+#### there are five levels of cut, but the linear model only generate four coefficients  why?
+Stated succinctly, we only need n - 1 variables to describe the trends found in a categorical or ordinal feature with n levels, since the intercept provides a baseline upon which the levels' effects act as modifiers. 
+
+In the model cut coefficient names are cut.L, cut.Q, cut.C, and cut^4.  L means linear, Q means quadratic, and C means cubic.
+
+__In a linear model, feature values are multiplied by coefficients to depict their contribution to the predicted outcome value__, but what exactly that 'feature value' is depends on the type of feature that is being fit. We make a distinction between __four different types of variables when it comes to classification: Categorical, Ordinal, Interval, and Ratio__.
+
+__Interval and Ratio__ variables are treated straightforwardly: the raw value of the feature is inserted into our linear model equation directly, and multiplied by the value of the corresponding coefficient.
+
+__Categorical features__ are a little bit more complicated; instead of a single coefficient associated with a categorical feature, we use a set of dummy variables to encode the individual levels of the category. With a categorical feature of n levels, n - 1 dummy variables are enough to describe the change between category levels, assuming that there is a separate "intercept" coefficient. Each dummy variable corresponds with a single level of the categorical variable, and the feature value associated with the dummy is 1 if a data point is in that level, or 0 if the data point is not. In this way, each data point flags a 1 for at most one dummy variable, and a 0 for all others. This flagged dummy coefficient shows the contribution of the category to the outcome prediction as a difference from the intercept baseline. (In the case where all dummies are 0, the data point is part of the category level not encoded by the dummy and its value is captured by the intercept.)
+
+__Ordered variables__ are the most complicated ones to handle, and bear qualities that are in between categorical variables and interval/ratio variables. __Much like categorical variables, if we have n levels in our ordered feature, we will have n - 1 coefficients associated with the ordered feature__. 
+But __unlike categorical variables, the feature values for data points on the ordered variable will not simply take values of 0 and 1. Instead, the values are based on polynomial contrasts that try to preserve the ordered nature of the levels in the variable while also recognizing that, unlike an interval or ratio scale, the differences between consecutive levels of an ordered variable may not be equal. Each of the contrast coefficients associated with the ordered variable is also associated with a different order of polynomial__.
+
+
+Being an ordinal variable, however, it may not be the case that there are equal gaps between levels - 
+the difference between Fair and Good may not be the same as the difference between Good and Very Good. 
+
+If we do not want to assume equal gaps between levels, then we can look at higher-order contrasts. 
+
+For example, the quadratic contrast has the following values associated with feature levels: 
+
+[0.535, -0.267, -0.535, -0.267, 0.535]. So if we had that same data point of Premium cut, the quadratic contrast coefficient would be multiplied by -0.267. Again, the sum of the feature values is 0 and the sum of squares is 1 (with a little bit of rounding error), while the relationship between values follows a quadratic function. One other thing to note is that the dot product of the values for the quadratic contrast with the values of the linear contrast is 0; the vectors implied by the contrasts are orthogonal (perpendicular). 
+
+These properties carry through all of the contrasts. The contrasts' orthogonality is important to maintain independence between terms; we want to avoid interaction effects here. 
+
+You can __print out a matrix of these contrasts using the contr.poly(n) function, where n is the number of levels__.
+
+
+One final thing to think about: __ why do we want to do this?__
+
+We could just as easily treat the ordered factor as categorical, and we can more easily interpret the coefficients associated with each of the feature levels due to the binary (0-1) nature of dummy variable values. However, __the coefficients of the polynomial contrasts allows us to see the complexity in the relationship between the levels of the ordered variable__. Is there a linear trend in levels? How impactful are the higher-order polynomials? How much would we lose by simplifying the system and treating the ordered variable as an continuous interval variable (only having the linear contrast)?
+
+
+##### Qtn : how do you get the values [-0.632, -0.316, 0.000, 0.316, 0.632] and [0.535, -0.267, -0.535, -0.267, 0.535] above notes?
+
+To provide a concrete example, for the diamond dataset's cut variable, we have five ordered levels: [Fair, Good, Very Good, Premium, Ideal]. Consequently, the complete set of polynomial contrasts provides four coefficients: [L, Q, C, ^4], representing the linear, quadratic, cubic, and quartic trends. 'contr.poly(5)' gives us the contrast matrix.
+
+```{r}
+contr.poly(5)
+```
+
+
+[-0.632, -0.316, 0.000, 0.316, 0.632] is the 1st column of above matrix
+
+
+If we have a diamond of cut quality "Premium", this is the fourth level of the cut feature. Looking on the fourth row of the matrix, we can see what values the point will take in the linear model. 0.316, in the first column, will be multiplied by the "cut:L" coefficient. -0.267, in the second column, will be multiplied by the "cut:Q" coefficient. Summing over the product of values and coefficients (dot product), we see the overall contribution of the data point's cut to the prediction of price.
+
+As alluded to above, this is not a direct way of showing the contribution - if you want a more straightforward way of doing that you may want to treat the data as a categorical variable instead of ordered, then look at the generated coefficients on the dummy variables. But this way of looking at things allows you to see how closely the levels of an ordered factor resemble that of a standard numeric measure (interval or ratio scale) or how they differ. You can do some internet searches for more information about contrasts, which are used in regression and hypothesis testing such as in ANOVA.
+
+The key point to keep in mind is that when a variable is treated as ordinal (ordered factor), the polynomial contrasts do not have a one-to-one correspondence with individual levels of the variable. If a variable is set as a categorical variable (factor), then each level of the variable will be associated with a single coefficient - you can observe this in the "color" and "clarity" coefficients for "m4" and "m5" in the table in your previous post. Instead, when you have an ordinal variable, the contrasts work together as a group to tell you what the contribution of a specific level of the variable is. So if we wanted to know what the influence of the "cut = Good" level was, then we would need to take a linear combination over all four of our contrasts, from linear to quartic. As noted in the part of my post that you quoted, treating a feature as an ordinal variable through the use of contrasts is trickier to interpret than simply treating it as categorical via dummies. However, the constraints that are placed on ordinal variables and contrasts can be informative in terms of how the levels of the variable vary with the values of the outcome variable.
+
+In regards to your question about why there are six coefficients listed for your "cut" variable, take a very careful look at which models have values on each of the coefficients. You'll note that "m3" has values listed against the first four coefficients representing a complete set of polynomial contrasts, but that "m4" and "m5" have values only against the last two coefficients, which appear to be more categorical in nature. If you look at the "Calls" section of the output, above the table of coefficients, compare the construction of "m1", "m2", and "m3" against that of "m4" and "m5". There is something fundamentally different between the former three models and the latter two that is causing there to be six "cut" coefficients to show up.
+
+Note that the first three models are fit on the 'diamonds' dataset and the latter 2 are fit on the 'diamondsbig' dataset. Even though both datsets have a variable named "cut" the way that the 2 variables have been encoded are different which is causing the differences in the output observed.
+
+
+We're accounting for almost all of the variance in price using the four "C"s. If we want to know whether the price for,
+a diamond is reasonable, we might now use this model.
+
+Notice how adding cut to our model does not help explain much of the variance in the price of diamonds. This fits with out exploration earlier.
 
 ***
 
 ### Model Problems
-Video Notes:
 
-Research:
-(Take some time to come up with 2-4 problems for the model)
-(You should 10-20 min on this)
+There was so much you might have said here. And, if you have any ideas that I don't mention, please share them in the forum. To start, our data's from 2008. So, not only do we need to account for inflation, but the diamond market is quite different now than it was. In fact, when I fit models to this data and predicted the price of the diamonds that I found off a market, I kept getting predictions that were way too
+low. After some additional digging, I found that global diamonds were poor. It turns out that prices plummeted in 2008 due to the global financial crisis. And since then prices, at least for wholesale polished diamonds, have grown at about of couples in China buying diamond engagement rings might also explain this increase.
 
-Response:
+And finally, after looking at the data on price scope, I realize that diamond prices grew unevenly across different carat sizes since 2008, meaning that the model I initially estimated couldn't simply be adjusted by inflation.
+
+
 
 ***
 
@@ -261,13 +448,12 @@ Response:
 Notes:
 
 ```{r A Bigger, Better Data Set}
-install.package('bitops')
-install.packages('RCurl')
+#install.packages('bitops')
+#install.packages('RCurl')
 library('bitops')
 library('RCurl')
 
-diamondsurl = getBinaryURL("https://raw.github.com/solomonm/diamonds-data/master/BigDiamonds.Rda")
-load(rawConnection(diamondsurl))
+load("BigDiamonds.rda")
 ```
 
 The code used to obtain the data is available here:
@@ -276,35 +462,119 @@ https://github.com/solomonm/diamonds-data
 ## Building a Model Using the Big Diamonds Data Set
 Notes:
 
-```{r Building a Model Using the Big Diamonds Data Set}
+We'll only use GIA certified diamonds in this log. I look only at diamonds under $10,000 because these are the type of diamonds sold at most retailers, and hence, the kind we care most about. By trimming the most expensive diamonds from the data set, our model will also be less likely to be thrown off by outliers, and the higher variants at the high-end of price and carat.
 
+```{r Building a Model Using the Big Diamonds Data Set}
+diamondsbig$logprice = log(diamondsbig$price)
+mb1 <- lm(logprice ~ I(carat^(1/3)), data=diamondsbig[diamondsbig$price<10000 & diamondsbig$cert=="GIA", ])
+mb2 <- update(mb1, ~ . + carat)
+mb2 <- update(mb1, ~ . + carat)
+mb3 <- update(mb2, ~ . + cut)
+mb4 <- update(mb3, ~ . + color)
+mb5 <- update(mb4, ~ . + clarity)
+
+#(Tables your models and pulls out the statistics)
+modelsbig <- mtable(mb1, mb2, mb3, mb4, mb5)
+modelsbig
 ```
 
+What we will do first is make a variable called logged price, the log of diamond price.
+
+And then we will build our model similarly to the way that we did for the small diamond status set. Notice that we're setting price by diamonds whose price is less than $10,000 and whose certificate is G.I.A.. Thankfully our models look quite a bit
+like they did for the smaller diamond status set. Although our R squared values are just a touch weaker.
 
 ***
 
 ## Predictions
 
+After all this work, let's use our model to make a prediction. __We need to exponentiate the result of our model. Since we took the log of price.__
+
 Example Diamond from BlueNile:
 Round 1.00 Very Good I VS1 $5,601
 
 ```{r}
-#Be sure you’ve loaded the library memisc and have m5 saved as an object in your workspace.
+#Be sure you have loaded the library memisc and have m5 saved as an object in your workspace.
 thisDiamond = data.frame(carat = 1.00, cut = "V.Good",
                          color = "I", clarity="VS1")
-modelEstimate = predict(m5, newdata = thisDiamond,
+modelEstimate = predict(mb5, newdata = thisDiamond,
                         interval="prediction", level = .95)
 ```
 
+
+```{r}
+exp(modelEstimate)
+```
+
+
 Evaluate how well the model predicts the BlueNile diamond's price. Think about the fitted point estimate as well as the 95% CI.
 
+__Ans:__ The results yield an expected value for price given the characteristics of our diamond, and the upper and lower bounds of a 95% confidence level. 
+
+Note, because this is a linear model, predict is just multiplying each model coefficient by each value in our data. It turns out that this diamond is a touch pricier than the expected value under the full model, though it is by no means outside of the 95% confidence interval.
+
+The prediction interval here may be slightly conservative, as the model errors are __heteroskedastic__ over carat (and hence price) even after our log and cube-root transformations.
+See the output of the following code.
+
+```
+dat = data.frame(m4$model, m4$residuals)
+
+with(dat, sd(m4.residuals))
+
+with(subset(dat, carat > .9 & carat < 1.1), sd(m4.residuals))
+
+dat$resid <- as.numeric(dat$m4.residuals)
+
+ggplot(aes(y = resid, x = round(carat, 2)), data = dat) +
+  geom_line(stat = "summary", fun.y = sd)
+```
+```{r}
+dat = data.frame(mb4$model, mb4$residuals)
+with(dat, sd(mb4.residuals))
+```
+
+```{r}
+with(subset(dat, carat > .9 & carat < 1.1), sd(mb4.residuals))
+```
+
+```{r}
+dat$resid <- as.numeric(dat$mb4.residuals)
+
+ggplot(aes(y = resid, x = round(carat, 2)), data = dat) +
+  geom_line(stat = "summary", fun.y = sd)
+```
+
+
+How could we do better? If we care most about diamonds with carat weights between 0.50 and 1.50, we might restrict the data we use to fit our model to diamonds that are that size - we have enough data.
+
 ***
 
-## Final Thoughts
-Notes:
 
-***
 
-Click **KnitHTML** to see all of your hard work and to have an html
-page of this lesson, your answers, and your notes!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
