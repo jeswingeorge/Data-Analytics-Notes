@@ -1,0 +1,234 @@
+---
+title: "ggplot2 histogram"
+author: "Jeswin"
+date: "5 October 2017"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+library(tidyr)
+suppressMessages(library(dplyr))
+```
+
+__rep(x,times)__ replicates the values in x.
+
+If times consists of a single integer, the result consists of the whole input 
+repeated this many times. If times is a vector of the same length as x (after 
+replication by each), the result consists of x[1] repeated times[1] times, x[2] 
+repeated times[2] times and so on.
+
+
+```{r}
+set.seed(1234)
+df <- data.frame(
+  sex = factor(rep(c('F','M'), each = 200)),
+  weight = round(c(rnorm(200, mean = 55, sd = 5), rnorm(200, mean = 65, sd = 5)))
+)
+head(df)
+```
+
+```{r}
+# Basic histogram
+ggplot(df, aes(x=weight)) + geom_histogram()
+```
+
+```{r}
+# Change the width of bins
+ggplot(df, aes(x=weight)) + 
+  geom_histogram(binwidth=1)
+```
+
+```{r}
+# Change colors
+p<-ggplot(df, aes(x=weight)) + 
+  geom_histogram(color="black", fill="white")
+p
+```
+
+## Add mean line and density plot on the histogram
+
+- The histogram is plotted with density instead of count on y-axis
+- Overlay with transparent density plot. The value of alpha controls the level 
+of transparency
+
+```{r}
+# Add mean vline
+p+geom_vline(aes(xintercept = mean(weight)), color = 'blue', linetype = 'dashed',size=1)
+```
+
+```{r}
+# Histogrm with density plot
+ggplot(df, aes(x=weight)) +
+  geom_histogram(aes(y = ..density..), color = 'black', fill = 'white')+
+  geom_density(alpha=0.2, fill = "#FF6666")
+
+```
+
+## Change histogram plot line types and colors
+
+```{r}
+# Change line type
+ggplot(df, aes(x=weight))+
+  geom_histogram(color="black", fill="lightblue",linetype="dashed")
+```
+
+## Change histogram plot colors by groups
+
+### Calculate the mean of each group :
+
+```{r}
+mu <- df %>%
+  group_by(sex)%>%
+  summarise(mean = mean(weight))
+mu
+```
+
+### Change line colors
+
+Histogram plot line colors can be automatically controlled by the levels of the
+variable sex.
+
+```
+Note that, you can change the position adjustment to use for overlapping points on the layer. Possible values for the argument 
+position are "identity", "stack", "dodge". Default value is "stack".
+```
+Here tried with the three positionj types.
+
+```{r}
+# Change histogram plot line colors by groups
+ggplot(df, aes(x=weight, color=sex)) +
+  geom_histogram(fill="white", binwidth = 2)
+```
+
+```{r}
+# Overlaid histograms
+ggplot(df, aes(x=weight, color=sex)) +
+  geom_histogram(fill="white", alpha=0.5, position="identity", binwidth = 2)
+```
+
+```{r}
+# Overlaid histograms
+ggplot(df, aes(x=weight, color=sex)) +
+  geom_histogram(fill="white", alpha=0.5, position="dodge",binwidth = 2)
+```
+
+### # Interleaved histograms
+
+```{r}
+# Interleaved histograms
+ggplot(df, aes(x=weight, color=sex)) +
+  geom_histogram(fill="white", position="dodge")+
+  theme(legend.position="top")
+```
+
+##### Observe how the ggplot and geom_vline use different dataframes
+
+```{r}
+# Add mean lines
+p<-ggplot(df, aes(x=weight, color=sex)) +
+  geom_histogram(fill="white", position="dodge")+
+  geom_vline(data=mu, aes(xintercept=mean, color=sex),
+             linetype="dashed")+
+  theme(legend.position="top")
+p
+```
+
+
+It is also possible to change manually histogram plot line colors using the functions :
+
+- __scale_color_manual()__ : to use custom colors
+- __scale_color_brewer()__ : to use color palettes from RColorBrewer package
+- __scale_color_grey()__ : to use grey color palettes
+
+```{r}
+# Use custom color palettes
+p+scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9"))
+```
+
+```{r}
+# Use brewer color palettes
+p+scale_color_brewer(palette="Dark2")
+```
+
+```{r}
+# Use grey scale
+p + scale_color_grey() + theme_classic() +
+  theme(legend.position="top")
+```
+
+### Change fill colors
+
+Histogram plot fill colors can be automatically controlled by the levels of sex:
+
+```{r}
+# Change histogram plot fill colors by groups
+ggplot(df, aes(x=weight, fill=sex, color=sex)) +
+  geom_histogram(position="identity")
+```
+
+
+```{r}
+p<-ggplot(df, aes(x=weight, fill=sex, color=sex)) +
+  geom_histogram(position="identity", alpha=0.5)
+p
+```
+
+```{r}
+# Add mean lines
+p+geom_vline(data=mu, aes(xintercept=mean, color=sex),
+             linetype="dashed", size=2)
+```
+
+Some plots remaining : Refer : ***sthda.com ggplot2 essentials histogram***
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
