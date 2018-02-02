@@ -25,3 +25,7 @@ all_alpha_08.xls
 *.tsv
 *.zip
 rt_html
+*.zip
+ebert_reviews
+*.tsv
+et_the_extraterrestrial.html
