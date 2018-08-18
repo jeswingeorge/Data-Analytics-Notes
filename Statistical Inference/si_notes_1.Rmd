@@ -1,0 +1,332 @@
+```{r}
+df <- read.csv("students_mark.csv", stringsAsFactors = FALSE)
+head(df)
+```
+
+plot the distribution of mark. 
+
+```{r}
+hist(df$Mark, breaks = seq(160, 600, 20),
+     xlim = c(160,600), main = "Distribution of Mark", xlab = "Mark")
+```
+
+
+From the histogram we can observe, the distribution of the random variable mark is close to  normal distribution.
+
+```{r}
+xbar <- mean(df$Mark)
+sample_variance <- var(df$Mark)
+sample_sd <- sd(df$Mark)
+n <- nrow(df)
+```
+
+The mean, variance and the standard deviation of the distribution was calculated.
+
+Now that the surveying agency has collected the sample, has an idea about the underlying probability distribution and has calculated the sample statistics, the next task is to estimate the population parameters.
+
+As, sample mean is an unbiased estimator of the population mean.
+
+Range of the mean to lie within 95% CI: xbar +- (zcrit*std_error)
+
+sample standard deviation (s) is the  unbiased estimator for the population standard deviation.
+
+```{r}
+se <- sample_sd/sqrt(n)
+se
+```
+
+
+```{r}
+zlower <- qnorm(0.025)
+zlower
+```
+
+```{r}
+zupper <- qnorm(0.975)
+zupper
+```
+
+Hence, obtained range of mean within 95% CI
+
+```{r}
+lower_mean <- xbar + (zlower)*(se)
+lower_mean
+```
+
+```{r}
+upper_mean <- xbar + (zupper)*(se)
+upper_mean
+```
+
+---------------------------------------------------------------------------------------
+
+## Confidence interval of population standard deviation
+
+```{r}
+xlower <- qchisq(0.025, df = 1119)
+xlower
+```
+
+
+```{r}
+xupper <- qchisq(0.975, df = n - 1)
+xupper
+```
+
+```{r}
+population_var_lower <- ((n - 1) * sample_variance)/xupper
+population_var_lower
+```
+
+```{r}
+population_var_upper <- ((n - 1) * sample_variance)/xlower
+population_var_upper
+```
+
+Hence, obtained the interval range of the populatuion variance.
+
+===========================================================================================
+
+According to the surveying agency the confidence interval of population mean is (408 to 417). The Govt. wants  to verify this claim. 
+
+HYPOTHESIS TEST
+------------------
+
+Q1. 
+ To validate the estimation of the surveying agency that the mean mark scored by all the students in surprise test is 413 with the confidence interval as (408, 417), the govt. has picked up 100 students from the country. The mean mark scored in the surprise test by these 100 students was found to be 403 with a standard deviation of 75.
+ 
+(Population sd is not known)
+ 
+ 
+```{r}
+rm(list = ls())
+mu0 <- 413
+n <- 100 # sample size
+xbar <- 403
+sample_sd <- 75
+alpha <- 0.05
+```
+
+
+
+H0 : The estimate given by the surveying agency is correct, i.e., the mean mark scored by all the students in the surprise test is 413.
+Ha : mean mark scored by all the students in surprise test is less than 413.
+
+(One-tailed test)
+```{r}
+se <- sample_sd/sqrt(n)  # se is sample sd
+zcrit <- (xbar - mu0)/se
+zcrit
+```
+
+
+Finding p-values : the probability of getting a sample mean
+
+```{r}
+p_value <- pnorm(zcrit)
+p_value
+```
+
+
+
+```{r}
+p_value > alpha
+```
+
+
+As the P value > significance level,  Null hypothesis can NOT be rejected i.e. based on the performance of selected 100 students, it can NOT be concluded that the surveying agency's estimation are not valid. 
+
+
+--------------------------------------------------------------------------------------------
+Q2. 
+Consider the average weight of Penguins found in an Antarctica last year was 16.3 kg. In a sample of 35 penguins same time this year in the same colony, the mean penguin weight is 15.7 kg. Assume the population standard deviation is 2.7 kg. At .05 significance level, does the current year's mean of penguin weight differ from last year?
+
+(Population sd is known)
+
+```{r}
+rm(list = ls())
+mu0 <- 16.3
+n <- 35   # sample size
+alpha <- 0.05
+xbar <- 15.7
+sigma <- 2.7
+```
+
+
+```{r}
+se <- sigma/sqrt(n)
+zcrit <- (xbar - mu0)/se
+zcrit
+```
+
+The Z statistic is -1.314684
+Compute the critical values at .05 significance level
+
+```{r}
+z.half.alpha <- qnorm(1 - alpha/2)
+c(-z.half.alpha, z.half.alpha)
+```
+
+The test statistic -1.314684 lies between the critical values -1.9600 and 1.9600. At 0.05 significance level, we can say that that the mean penguin weight does not differ from last year, that is , we do not reject the null hypothesis.
+
+=======================================================================================
+
+which of these schools is performing better the agency
+
+```{r}
+df <- read.csv("students_mark.csv", stringsAsFactors = FALSE)
+head(df)
+```
+
+
+```{r}
+school1 <- subset(df, SchoolID == "ST1S1", select = Mark)
+school2 <- subset(df, SchoolID == "ST1S3", select = Mark)
+n1 <- nrow(school1)
+n2 <- nrow(school2)
+```
+
+The mean and standard deviation in mark was calculated for the schools
+
+```{r}
+mean_school1 <- mean(school1$Mark)
+mean_school2 <- mean(school2$Mark)
+sd_school1 <- sd(school1$Mark)
+sd_school2 <- sd(school2$Mark)
+```
+
+
+in order to conclude which of these schools is performing better the agency has to  estimate the difference between the population means of both the schools.
+
+
+Point estimate of difference between two population means:
+As sample mean is the unbiased estimator of population mean, the difference between two sample means can be used to estimate the difference between the population means. 
+
+```{r}
+population_mean_diff <- mean_school1 - mean_school2
+population_mean_diff
+```
+
+mean of sampling distribution of difference in sample mean will be at 28.25
+
+
+Interval estimate of difference between two population means
+
+in order to find the confidence interval of difference between two population means with 95% confidence level, the agency has to plot the sampling distribution of difference in sample means first and then identify the two points on the sampling distribution curve that enclose 95% of the total area under the curve.
+
+
+ESTIMATING SE IN 2 SAMPLE MEANS
+---------------------------------
+- When the population standard deviations are unknown we need to follow the steps given below to estimate the standard error.
+
+- We need to compare the variances of both the samples.
+
+```{r}
+var_school1 <- var(school1$Mark)
+var_school2 <- var(school2$Mark)
+var_ratio <- var_school1/var_school2
+var_ratio
+```
+
+CASE 1: If the sample variances are nearly equal (ratio between both the variances lie between 0.5 to 2) then we need to calculate the pool standard deviation  sp using the formula
+
+```{r}
+
+sp <- sqrt(((n1 - 1) * sd_school1^2 + (n2 - 1) * sd_school2^2) / (n1 + n2 - 2))   
+se <- sp*sqrt((1/n1) + (1/n2))
+```
+
+CASE 2: If both the sample variances are not close enough (ratio between the sample variances is less than 0.5 or more than 2) then we can estimate the standard error 
+
+```
+s.e <- sqrt((sd1^2/n1)+(sd2^2/n2))   
+```
+
+As n1 < 30 and n2<30, t-distribution
+
+```{r}
+d_f <- n1 + n2 - 2  # Degrees of freedom
+d_f
+```
+
+
+
+Calculating CI
+```{r}
+tcritical <- qt(0.975, 38)
+tcritical
+```
+
+to determine the confidence interval.
+
+```{r}
+p1 <- population_mean_diff - (tcritical * se)
+p2 <- population_mean_diff + (tcritical * se)
+c(p1, p2)
+```
+
+the confidence interval of difference between the population means of the school ST1S1 and ST1S3 to be (-28.96632, 85.46632). 
+
+if all the students from both the schools (ST1S1 and ST1S3) would have appeared for the surprise test, the difference between the mean mark scored by students from ST1S1 and ST1S3 would have been somewhere in the range (-28.96632, 85.46632).
+
+
+school is the factor that distinguished both the populations from each other. In order to find out whether a factor has significant effect on the population, we need to compare these treatments. 
+
+#  Does school affect the performance of students?
+
+2 sample t test is a hypothesis test, performed to find out whether there is a significant difference between two population means by analyzing samples drawn from each population. 
+
+# 2 SAMPLE TEST
+
+
+step 1: Define the Null Hypothesis , Alternate Hypothesis and level of Significance. 
+
+H0 : Mark scored by a student is not affected by the school i.e. mu1=mu2
+Ha : Mark scored by a student depends upon the school i.e, mu1 != mu2
+(2-tailed test)
+
+alpha = 0.05
+
+
+Step 2: The Sampling distribution of difference in sample means. 
+
+The null hypothesis assumes both the population means to be equal. 
+The mean of the sampling distribution is at mu1 - mu2
+
+Assuming the null hypothesis to be true mean of the sampling distribution is at 0. (mu1=mu2)
+The standard error is already calculated by the agency and is found to be 28.263. 
+
+ 
+```{r}
+se 
+```
+
+
+STEP 3: Calculating test statistic
+
+test statistic. It is the measure of how far the observed difference in the sample means lie from the mean of sampling distribution in terms of standard error. 
+
+
+mu1 -mu2 = 0
+
+Calculating test-stattistic 
+```{r}
+test_statistic <- ((mean_school1 - mean_school2) - 0)/(se)
+test_statistic
+```
+
+Step 4: Calculating tcritical and and acceptance region. comparing with the test statistic to accept/reject the Null hypothesis
+
+```{r}
+tcritical <- qt(0.975, df = 38)
+tcritical
+```
+
+```{r}
+# Acceptance region
+c(-tcritical, tcritical)
+```
+
+The test statistic 0.9995248 falls in the acceptance region. Hence the agency fails to reject the Null hypothesis which assumes both the population means to be equal. 
+
+Step 5: Stating the Conclusion

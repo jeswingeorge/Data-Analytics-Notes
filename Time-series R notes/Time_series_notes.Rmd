@@ -1,0 +1,870 @@
+```{r}
+library(ggplot2)
+library(ggfortify)
+library(timeSeries)
+```
+
+```{r}
+library("datasets")
+autoplot(
+  as.timeSeries(AirPassengers),
+  ts.colour = "dodgerblue3",
+  main = "Air PAssenegers Data",
+  xlab = "Jan 1949 to Dec 1960",
+  ylab = "Number of airpassenegers") +
+  theme(text = element_text(size = 20))
+```
+
+
+## Converting sorted data into TS data
+
+```{r}
+library(zoo)
+rm(list = ls())
+dates <- seq(as.Date("2018/1/1"), as.Date("2018/1/10"), "day")
+values <- as.vector(floor(runif(10, 1, 500)))
+```
+
+Forming a zoo object
+
+```{r}
+zoo_object <- zoo(values, order.by = as.Date(dates))
+class(zoo_object)
+```
+
+Converting zoo object into TS
+```{r}
+ts_data <- ts(zoo_object)
+class(ts_data)
+```
+
+
+## COnverting unsorted data into timeseries data
+
+```{r}
+reshuffled_date <- as.data.frame(sample(dates))
+class(reshuffled_date)
+```
+
+```{r}
+undf <- cbind(reshuffled_date, values)
+class(undf)
+```
+
+```{r}
+head(undf)
+```
+
+
+```{r}
+zoo_object <- zoo(undf[,2], order.by = as.Date(undf[,1]),
+                  unique(T))
+class(zoo_object)
+```
+
+```{r}
+zoo_object
+```
+
+
+We then use the ts() function to create a time series data using zoo object
+
+```{r}
+timeseries_data <- ts(zoo_object)
+timeseries_data
+```
+
+***
+
+## Components of TS data
+
+### Trend
+
+```{r}
+autoplot(decompose(AirPassengers)$trend,
+         ts.colour = "dodgerblue3",
+         main = "Air Passengers Trend",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers") 
+```
+
+
+
+```{r}
+library(fma)
+autoplot(decompose(hsales)$trend,
+         ts.colour = "dodgerblue3",
+         main = "House Sales Data",
+         xlab = "Jan 1973 to Nov 1995",
+         ylab = "Monthly housing sales") 
+```
+
+
+### Seasonal
+```{r}
+autoplot(decompose(AirPassengers)$seasonal,
+         ts.colour = "dodgerblue3",
+         main = "Air Passengers Seasonality",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers") 
+
+```
+
+To get seasonal data for 1 year
+
+```{r}
+passenegrs <- decompose(AirPassengers)
+autoplot(ts(passenegrs$seasonal[1:12]),
+         ts.colour = "dodgerblue3",
+         main = "Air Passengers Seasonality",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers") 
+
+```
+
+As AirPassengers does not exhibit cyclic variations, let's analyze the hsales dataset 
+
+```{r}
+autoplot(ts(hsales),
+         ts.colour = "dodgerblue3",
+         main = "House Sales Data",
+         xlab = "Jan 1973 to Nov 1995",
+         ylab = "Monthly housing sales") 
+```
+
+When irregular fluctuations occur in the time series data, they can be categorized under Random factors.
+
+```{r}
+autoplot(decompose(hsales),
+         ts.colour = "dodgerblue3",
+         main = "House Sales Data",
+         xlab = "Jan 1973 to Nov 1995",
+         ylab = "Monthly housing sales") 
+```
+
+If the three components of a time series graph are missing i.e. trends, seasonality or cyclic then the time series data is termed as random. Time series data does not need to have all the components.
+
+## Additive Model and deseasonalized data
+
+Converting AirPassengers Data into yearly format
+```{r}
+rm(list = ls())
+AP <- ts(AirPassengers[1:132],       # not considering values for year 1960
+         frequency = 12)             # Yearly format
+```
+
+ Decomposing the TS data
+```{r}
+decomposedAP <- decompose(AP, 
+                          type = "additive")
+summary(decomposedAP)
+```
+
+```{r}
+# decomposedAP$trend                  # Gives trend values
+# decomposedAP$seasonal               # Gives seasonal values per value
+# decomposedAP$figure                 # Gives overall seasonal value
+```
+
+Deseasonalized data
+```{r}
+deseasonalized_data <- AirPassengers - decomposedAP$figure 
+```
+
+If it was for quarter we will consider freq as 4 while decomposing and use AP variable instead of Airpassengers.
+
+
+
+```{r}
+library(gridExtra)
+library(grid)
+p1 <- autoplot(as.timeSeries(AirPassengers),
+         ts.colour = "dodgerblue3",
+         main = "Original Air Passengers Data",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers") 
+
+p2 <- autoplot(as.timeSeries(deseasonalized_data),
+         ts.colour = "dodgerblue3",
+         main = "De-Seasonalized Air Passengers Data",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers") 
+
+grid.arrange(p1, p2, ncol = 2)
+```
+
+Decomposition using Addition
+
+```{r}
+autoplot(decompose(AP, 
+                   type = "additive"))
+```
+
+***
+
+## Multiplicative Model and deseasonalized data
+
+Decomposing the TS data
+
+```{r}
+decomposedAP <- decompose(AP, type = "multiplicative")
+summary(decomposedAP)
+
+#decomposedAP$trend                  # Gives trend values
+#decomposedAP$seasonal               # Gives seasonal values per value
+#decomposedAP$figure                 # Gives overall seasonal value
+```
+
+Deseasonalized data
+
+```{r}
+deseasonalized_data <- AirPassengers / decomposedAP$figure
+```
+
+Original TS Data
+
+```{r}
+p1 <- autoplot(as.timeSeries(AirPassengers),
+         ts.colour = "dodgerblue3",
+         main = "Original Air Passengers Data",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers") 
+
+p2 <- autoplot(as.timeSeries(deseasonalized_data),
+         ts.colour = "dodgerblue3",
+         main = "Air Passengers Data",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers")
+
+grid.arrange(p1,p2,ncol=2)
+```
+
+
+From Fig of (Additive model) we may observe that there are more variations in the trend as compared to Fig of (Multiplicative model). By looking at these observations we may conclude that deseasonalized AirPassengers data might give us a clearer trend using multiplicative model.
+
+
+***
+
+## Smoothing TS data
+
+
+### 1. Simple Moving Averages
+
+```{r}
+library(TTR)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+
+AP <- ts(AirPassengers, frequency = 12)
+TrendPattern4 <- SMA(AP, n = 4)                # try for n = 8
+TrendPattern8 <- SMA(AP, n = 8)
+
+p1 <- autoplot(AP,
+         main = "SMA 4-period and Annual Trend",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers") +
+  geom_line(aes(y = TrendPattern4), colour = "red")
+
+p2 <- autoplot(AP,
+         main = "SMA 8-period and Annual Trend",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers") +
+  geom_line(aes(y = TrendPattern8), colour = "red")
+
+grid.arrange(p1,p2,ncol=2)
+```
+
+We can observe  4 period moving average of the AirPassengers has lots off variations as compared to 8 period moving average.
+
+
+Under-smoothning <- with lower values of n
+Over-smoothning <- with higher values of n
+
+The value of 'n' should be set in a manner where both under smoothing and over smoothing can be avoided.
+
+The trend line is asymmetric in simple moving average. 
+
+### 2.Centered Moving Averages
+
+We can make the trend line symmetric by placing the average in the middle of the time series, this is known as centered moving average.  This works well for odd period moving average than even period moving average. 
+
+
+```{r}
+CMA <- function(TS_val, n){
+  filter(TS_val, rep(1/n,n), sides = 2)
+}
+
+TrendPattern_2 <- CMA(AirPassengers[1:12], 2)        # try with n = 3, 4, 5
+TrendPattern_2
+```
+
+```{r}
+TrendPattern_3 <- CMA(AirPassengers[1:12], 3)
+TrendPattern_4 <- CMA(AirPassengers[1:12], 4)  
+TrendPattern_5 <- CMA(AirPassengers[1:12], 5)  
+```
+
+
+
+```{r}
+AP <- ts(AirPassengers[1:12], frequency = 12)
+p1 <- autoplot(AP,
+         main = "2 period movbing average",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers") +
+  geom_line(aes(y = TrendPattern_2), colour = "red")
+
+p2 <- autoplot(AP,
+         main = "3 period movbing average",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers") +
+  geom_line(aes(y = TrendPattern_3), colour = "red")
+
+p3 <- autoplot(AP,
+         main = "4 period movbing average",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers") +
+  geom_line(aes(y = TrendPattern_4), colour = "red")
+
+p4 <- autoplot(AP,
+         main = "5 period movbing average",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers") +
+  geom_line(aes(y = TrendPattern_5), colour = "red")
+
+grid.arrange(p1,p2,p3,p4, ncol=2)
+```
+
+
+Simple and centered moving average, however, treats the last n observations equally. All observations before that are ignored.
+
+In some scenarios all of the past data must be given gradual weightage. Maximum weightage should be given to the most recent data while minimum weightage should be given to the least recent data or vice-versa. In between maximum and minimum there is a gradual change in the weightage which are assigned to the observations. This type of smoothing is called exponential smoothing.
+
+***
+
+## 3. Exponential Smoothing
+
+If you are predicting for only 1 month then h=1.  
+if you are predicting for all 12 months then h=12
+
+```{r}
+library(forecast)
+
+for (temp in c(1:12)) {
+  pred_val <- ses(AirPassengers[1:temp], 
+                  h = 1,                                   # Number of periods
+                  initial = "simple",                      # Simple/Optimal
+                  alpha = 0.2)                             # Alpha parameter
+}
+pred_val$fitted                                            # Smoothed TS
+```
+
+##### Estimation of the Smoothing Constant - alpha
+
+```{r}
+library(Metrics)
+print("To see mse values for different alpha")
+for (temp in c(1:9)) {
+  pred_val <- ses(AirPassengers[1:131], 
+                  h = 1,              
+                  initial = "simple", 
+                  alpha = temp/10)    
+  pred_val <- as.data.frame(pred_val)
+  print(mse(AirPassengers[132], pred_val[,1]))      
+  mse_values <- mse(AirPassengers[132], pred_val[,1])
+}
+```
+
+### To get the optimal vaLUE OF ALPHA
+
+```{r}
+optimal_alpha <- function(x) {
+  pred_val <- ses(AirPassengers[1:131], 
+                  h = 1,                                       # h=12 for whole month
+                  initial = "simple", 
+                  alpha = x)    
+  pred_val <- as.data.frame(pred_val)
+  return(mse(AirPassengers[132], pred_val[,1]))             
+}
+
+library(pracma)
+alpha_values <- fminbnd(optimal_alpha, 0, 1)
+alpha_values$xmin       
+```
+
+#### Prediction for the next 12 
+
+Forecast value for the next 12 months along with the confidence interval
+
+```{r}
+prediction <- ses(AirPassengers[1:132], h = 12, initial = "simple", alpha = alpha_values$xmin)
+prediction
+```
+
+
+```{r}
+autoplot(prediction)
+```
+
+
+# Checking the MSE with new alpha
+
+```{r}
+pred_val <- ses(AirPassengers[1:132], 
+                h = 1,              
+                initial = "simple", 
+                alpha = alpha_values$xmin)    
+pred_val <- as.data.frame(pred_val)
+print(mse(AirPassengers[132], pred_val[,1]))
+```
+
+##### Finding MSE 
+
+```{r}
+original <- c(23, 17, 17, 26, 11, 23, 17)                         
+estimated <- c(NA, NA, NA, 19, 20, 18, 20)
+mse(original[!is.na(estimated)], estimated[!is.na(estimated)]) # MSE=mse(actual,predicted)
+```
+
+
+Moving average and exponential smoothing can be used for short term predictions. In order to perform long term predictions, like forecasting values for 1 or 2 year, we need to use some other methods
+
+***
+
+## SEASONAL INDEXING
+
+Considering the AirPassengers Data till the year 1959(yearly data: frequency = 12) assuming it to be a multiplicative model as we have seen earlier. We shall predict the future value for the year 1960 using seasonal indexing.
+
+```{r}
+rm(list = ls())
+AirPassengers
+```
+
+
+
+### Below are the steps to forecast the value using seasonal indexing:
+
+```{r}
+air_pass <- matrix(AirPassengers, ncol = 12, byrow = T)
+air_pass <- air_pass[1:11,]
+air_pass
+```
+
+#### Step 1: Calculate the average number of passengers travelling in each year.
+
+```{r}
+air_avg <- apply(air_pass,1,mean)
+air_avg
+```
+
+#### step 2 : Divide original data with corresponding year average
+
+```{r}
+proportion <- air_pass/air_avg
+proportion
+```
+
+#### Step 3: Seasonal Index - Find average of each month
+
+```{r}
+seasonalIndex <- c()
+for (temp in 1:12) {
+  seasonalIndex[temp] <- mean(proportion[,temp])
+}
+seasonalIndex
+```
+
+
+#### Step 4: De-seasonalizing the real data 
+
+(if multiplicative -> divide | if additive -> subtract)
+
+```{r}
+deseasonalized_Air<-c()
+deseasonalized_Air<-AirPassengers[1:12]/seasonalIndex
+for (temp in 1:10) {                                                # Multiplication
+  deseasonalized_Air<-rbind(deseasonalized_Air,AirPassengers[         
+    ((temp*12)+1):((temp+1)*12)]/seasonalIndex)
+}
+```
+
+
+#### step5: Use linear regression to forecast the trend values for each month of 1960
+
+```{r}
+Airpass<-cbind(as.vector(t(deseasonalized_Air)),c(1:132))
+reg_air<-lm(Airpass[,1]~Airpass[,2])
+reg_air
+```
+
+```{r}
+#Trend values
+
+trend_value<-c()
+temp1<-1
+for (temp in 133:144) {
+  trend_value[temp1]<-
+    reg_air$coefficients[1] + reg_air$coefficients[2]*temp
+  temp1<-temp1+1
+}
+```
+
+
+#### Step 6 :  Calculate the monthly occupancy for the year 1960 by multiplying the seasonality index with the trend value
+
+```{r}
+pred_value<-c()
+for(temp in c(1:12))
+{
+  pred_value[temp]<-seasonalIndex[temp]*trend_value[temp]
+}
+round(pred_value)
+```
+
+
+We get trend values for each month of 1960.
+
+Sum of the seasonal index is always equal to the seasonal span. (Eg: for yearly data it is 12,quarterly data it is 4 and monthly data it is 1)
+
+Mean of the seasonal Index is always 1.
+
+
+***
+
+### Stationary TS data
+
+
+Use differencing to make a non-stationary TS into stationary one
+Diff(1) = TS[n] - TS[n-1]  |   Diff(2) = Diff(1)[n] - Diff(1)[n-1]
+
+Another term - Lag (delay in TS)
+Lag(1) = TS[n] - TS[n-1]   |   Lag(2) = TS[n] - TS[n-2]
+
+```{r}
+rm(list = ls())
+AP <- AirPassengers[1:12]
+AP          # original TS
+```
+
+```{r}
+diff(AP, differences = 1)              # Diff(1)
+diff(AP, differences = 2)              # Diff(2)
+diff(AP, lag = 1)                      # Lag(1) = Diff(1) {Always}
+diff(AP, lag = 2)                      # Lag(2)
+```
+
+If we differentiate the AirPassengers Data, its Trend will be lost and mean becomes constant
+Also, by taking the log of original data we can also make its variance constant.
+
+A series which is stationary after being differenced by 1 is said to be Integrated of order 1 and is denoted by I(1)
+
+```{r}
+autoplot(diff(log(AirPassengers)),
+         ts.colour = "dodgerblue3",
+         main = "I(1) of log(AirPassengers)",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers")
+```
+
+
+
+### use Dickey-Fuller test to check the stationarity of a series.
+
+```{r}
+library(fma)
+library(forecast)
+library(fma)  # for hsales data
+library(TTR)  # for moving avg
+library(forecast) # for exponential smoothing
+library(Metrics)  # for mse - alpha calculation exponential smoothing
+library(pracma)  # for alpha
+library(tseries)  # dickey fueler test
+```
+
+
+
+```{r}
+#using dickey fulter test to check stationary
+library(tseries)
+data("hsales")
+adf.test(hsales, alternative = "stationary") 
+```
+
+Since the p value is 0.01247 which is less than 0.05. Hence, TS is stationary.
+
+### Auto-Regressive Model 
+
+```{r}
+hsales_ar <- ar(hsales[1:252],          # Last two year values excluded
+                order = 1)
+predict(hsales_ar,                      
+        n.ahead = 12)                   # Yearly
+```
+
+$pred in the below R script is the predicted value of the monthly sales of houses.
+
+the squared errors ($se) for every month.
+
+
+It is also possible to predict the future values by using the error terms i.e., Moving average.
+
+
+
+***
+
+## ACF and PACF
+
+### ACF
+
+ACF plot => 1. Decays towards zero => MA(q) component might not exist.  => q=0
+ => 2. Abruptly goes towards zero => MA(q) component exists and value of q is determined by number of significant digits. lag after which the value of ACF is between the dashed line is chosen as the value of q. 
+
+
+```{r}
+autoplot(acf(hsales[1:252]),
+         ts.colour = "dodgerblue3",
+         main = "ACF of HSales",
+         xlab = "Lag",
+         ylab = "ACF")
+```
+
+__Values gradually decay towards zero. Hence, stationary Series__ and TS not suitable for MA model.
+
+=> MA(q) component might not exist
+
+
+
+```{r}
+
+autoplot(acf(log(AirPassengers[1:132])),
+         ts.colour = "dodgerblue3",
+         main = "ACF of log(AirPassengers)",
+         xlab = "Lag",
+         ylab = "ACF")
+```
+
+Values doesn't decay towards zero. Hence, non-stationary series
+so taking difference.
+
+```{r}
+autoplot(acf(diff(log(AirPassengers[1:132]))),
+         ts.colour = "dodgerblue3",
+         main = "ACF of diff(log(AirPassengers))",
+         xlab = "Lag",
+         ylab = "ACF")
+```
+
+VAlue Abruptly goes towards zero so MA(q) component exists
+
+acf(diff(log(AirPassengers))) we can observe that q = 1.
+
+
+### PACF
+
+The abrupt movement of the spike towards 0 signifies data might have AR(p) component. The lag after which the value of PACF is between the dashed line is chosen as the value of p. 
+
+PACF plot => 1. Decays towards zero => AR(p) component might not exist.
+=> 2. Abruptly goes towards zero => AR(p) component exists and value of p is determined by 
+number of significant digits.
+
+```{r}
+autoplot(pacf(hsales[1:252],lag.max = 50),
+         ts.colour = "dodgerblue3",
+         main = "PACF of HSales",
+         xlab = "Lag",
+         ylab = "PACF")
+
+```
+
+Values abrubptly decay towards zero after Lag 2 or 3. 
+Hence, stationary Series and suitable for AR(2) or AR(3) model. 
+
+```{r}
+autoplot(pacf(diff(log(AirPassengers[1:132]))),
+         ts.colour = "dodgerblue3",
+         main = "PACF of diff(log(AirPassengers))",
+         xlab = "Lag",
+         ylab = "PACF")
+```
+
+Values abrubptly decay towards zero after Lag 1 or 2. 
+Hence, stationary Series and suitable for AR(1) or AR(2) model. 
+
+
+***
+
+## Non-seasonal ARIMA(p,d,q)
+Seasonal ARIMA(p,d,q)x(P,D,Q)s  
+p: Autoregressive Order  
+d: Integration Order  
+q: Moving Average Order  
+D=number of seasonal differences,  
+P=number of seasonal autoregressive (SAR) terms,  
+Q=number of seasonal moving average (SMA) terms  
+S = seasonality period  
+
+### STEP 1 : REMOVE TREND/non-stationarity
+
+```{r}
+seasonal_diff <- diff(ts(log(AirPassengers), frequency = 12), 12)
+
+autoplot(seasonal_diff,
+         ts.colour = "dodgerblue3",
+         main = "I(1) of log(AirPassengers)",               # D=1 and d=1
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Frequency of Passengers")
+```
+
+
+
+
+We can observe from Fig that the seasonal difference still exhibits some 
+trend(curved). Hence we might need to difference this series again.
+
+```{r}
+seasonal_diff1 <- diff(seasonal_diff, 1)
+
+autoplot(seasonal_diff1,
+         ts.colour = ("dodgerblue3"),
+         main = "AirPassenegers Data",
+         xlab = "Jan 1949 to Dec 1960",
+         ylab = "Number of AirPassenegers") +
+  theme(text = element_text(size = 20))
+```
+
+
+##### If a series has a trend and no seasonality, then take the 1st difference. d = 1 and D = 1
+We can observe from Fig that the series does not exhibit any proper trend. Hence we may conclude that the value of d and D should be 1.
+
+#### OR TO CHECK FOR SEASONALITY use this test
+##### if seasonal == TRUE => seasonality is present
+
+```{r}
+t <- tbats(seasonal_diff1)
+seasonal <- !is.null(t$seasonal)
+seasonal
+```
+
+
+## STEP 2 : ACF plot of log(AirPassengers)(differenced by D=1 and d=1)
+
+```{r}
+autoplot(acf(seasonal_diff1, lag.max = 60),
+         ts.colour = "dodgerblue3",
+         main = "ACF",
+         xlab = "Lag",
+         ylab = "ACF")
+```
+
+
+Right after lag 1 values went abruptly towards zero. 
+Hence considering MA(1) model.      (MA(q) model) Since ACF => so q = 1
+
+#### q = 1
+
+## STEP 3 : PACF plot of log(AirPassengers)(differenced by D=1 and d=1)
+
+After Lag 1 values abruptly goes towards zero. Hence, considering AR(1) model.
+
+```{r}
+autoplot(pacf(seasonal_diff1, lag.max = 48),                        #AR(p)
+         ts.colour = "dodgerblue3",
+         main = "PACF",
+         xlab = "Lag",
+         ylab = "PACF")
+```
+
+Since PACF => so p = 1
+
+
+#### p = 1
+
+## STEP 4 : FROM  ACF and PCAF curve find seasonal components P and Q
+
+ACF value is significant at lag 12, but they are also significant at lag 23 and 32.
+
+The ACF values at higher lag (24,36,48 ) are not significant.
+
+Maybe a SMA(1) model might work,  
+as we may observe that lag 12 has a negative value in the ACF.
+
+So, P = 1
+
+SO , Based on the observation below ARIMA model might give us the optimum result:
+
+ARIMA(1,1,1)(0,1,1)12 (p,d,q) = (1,1,1) and (P,D,Q)s = (0,1,1)12
+
+Below are the AIC values for few possible ARIMA models:  
+
+VAry values of P and Q
+
+1. ARIMA(1,1,1)(0,1,1)12  
+2. ARIMA(1,1,1)(1,1,1)12  
+3. ARIMA(1,1,1)(0,1,0)12  
+
+
+Apply each of the above model to arima() to get the model and test using aic()
+function for lowest value
+
+Model 1:
+
+```{r}
+fit <- arima(log(AirPassengers[1:132]),
+             order = c(1, 1, 1),
+             seasonal = list(order = c(0, 1, 1),
+                             period = 12))
+
+AIC(fit)
+BIC(fit)
+```
+
+Model 2:
+
+```{r}
+fit <- arima(log(AirPassengers[1:132]),
+             order = c(1, 1, 1),
+             seasonal = list(order = c(1, 1, 1),
+                             period = 12))
+
+AIC(fit)
+BIC(fit)
+```
+
+Model 3:
+
+```{r}
+fit <- arima(log(AirPassengers[1:132]),
+             order = c(1, 1, 1),
+             seasonal = list(order = c(0, 1, 0),
+                             period = 12))
+
+AIC(fit)
+BIC(fit)
+```
+
+
+As Model 1 has lowest value of AIC and BIC so its the best model.
+
+ARIMA(1,1,1)(0,1,1)12  
+
+AFter choosing Predicting values for year 1960
+
+```{r}
+fit <- arima(log(AirPassengers[1:132]),
+             order = c(1, 1, 1),
+             seasonal = list(order = c(0, 1, 1),
+                             period = 12))
+
+pred_val <- exp(predict(fit, n.ahead = 12)$pred)
+pred_val
+```
+
+
+MSE for the prediction is 307.58.
+
+```{r}
+library(Metrics)
+mse(AirPassengers[133:144], pred_val)
+```
+
