@@ -1,0 +1,491 @@
+```{r}
+library(ggplot2)
+library(MASS)
+library(grid)
+library(gridExtra)
+library(reshape2)
+```
+
+
+
+## Boxplot
+
+plot them alongside each other
+```{r}
+op<-par(no.readonly = TRUE)
+par(mfrow=c(1,3))
+boxplot(trees$Girth)
+title(main="Girth of trees",ylab="Tree diameter in inches")
+boxplot(trees$Height)
+title(main="Height of trees",ylab="Tree height in ft")
+boxplot(trees$Volume)
+title(main="Volume of trees",ylab="Tree volume in cubic ft")
+par(op)
+```
+
+plotting them horizontally
+
+```{r}
+op<-par(no.readonly = TRUE)
+par(mfrow = c(2,1))
+boxplot(Cars93$Horsepower, horizontal = T)
+title(main="Horsepower of car",ylab="Horsepower")
+boxplot(Cars93$MPG.city, horizontal = T)
+title(main="MPG car",ylab="MPG")
+par(op)
+```
+
+```{r}
+head(trees)
+```
+
+Plotting boxplot of all columns in one graph
+
+```{r}
+boxplot(trees)
+```
+
+combining different boxplot in one graph
+
+```{r}
+p1 <- ggplot() +
+  geom_boxplot(data = trees, aes(factor(0), Girth)) +
+  scale_x_discrete(breaks = NULL) +
+  xlab(" ") +
+  ggtitle("Girth of trees")
+
+p2 <- ggplot() +
+  geom_boxplot(data = trees, aes(factor(0), Height)) +
+  scale_x_discrete(breaks = NULL) +
+  xlab(" ") +
+  ggtitle("Height of trees")
+  
+p3 <- ggplot() +
+  geom_boxplot(data = trees, aes(factor(0), Volume)) +
+  scale_x_discrete(breaks = NULL) +
+  xlab(" ") +
+  ggtitle("Volume of trees")
+
+grid.arrange(p1,p2,p3,ncol=3)
+```
+
+```{r}
+# Scatter plot
+plot(Cars93$Horsepower, Cars93$MPG.city, type = 'p', pch = "*", cex = 0.9)
+```
+
+p -points
+
+l -lines
+
+o - plot points and lines
+
+
+## scatter plots using the trees data set.
+```{r}
+plot(trees)
+```
+
+Not getting this correctly :
+
+```{r}
+attach(Cars93)
+Cars93_ordered <- Cars93[order(Horsepower),]
+detach(Cars93)
+plot(Cars93_ordered$Horsepower, Cars93_ordered$MPG.city, col = "red", lty = 4, ann = F)
+lines(Cars93_ordered$Horsepower, Cars93_ordered$MPG.city, col = "blue",lwd = 1, ann = F)
+legend("topright", legend = c("City Mileage", "Highway Mileage"), lty = c(4,1), col = c("red", "blue"))
+title(main = "Mileage vs Horsepower", xlab = "Horsepower", y = "City Mileage")
+```
+
+
+Trying using ggplot
+
+```{r}
+ggplot(data = Cars93_ordered) +
+  geom_point(aes(x = Horsepower, y = MPG.city)) +
+  geom_line(aes(x = Horsepower, y = MPG.city))
+```
+
+***
+
+```{r}
+library(ggplot2)
+```
+
+
+```{r}
+rm(list = ls())
+data(WorldPhones)
+df <- WorldPhones  # Is loaded as matrix change to data.frame
+head(df)
+```
+
+```{r}
+class(df)
+```
+
+```{r}
+df <- data.frame(df)
+class(df)
+```
+
+```{r}
+df$Years <- as.numeric(rownames(df))
+df$Years
+```
+
+```{r}
+df <- subset(df, select = c("Years" ,"N.Amer", "Asia", "Europe"))
+colnames(df)
+```
+
+As we need only 3 countries so melt the above data frame to use only 3 countries and put it in one column along with values in different column
+
+```{r}
+df_melt <- melt(df, id = c("Years"))
+head(df_melt)
+```
+
+```{r}
+colnames(df_melt) <- c("Years", "Countries", "NoOfPhones")
+colnames(df_melt)
+```
+
+
+```{r}
+ggplot(data = df_melt, aes(x = Years, y = NoOfPhones, group = Countries, colour = Countries)) +
+  geom_line()
+```
+
+
+***
+
+```{r}
+rm(list = ls())
+library(MASS)
+attach(Cars93)
+df <- Cars93
+```
+
+
+```{r}
+head(df)
+```
+
+### dot plot
+is a representation of distribution of a group of data points plotted on a simple scale. 
+
+```{r}
+dotchart(df$Rear.seat.room)
+```
+
+```{r}
+dotchart(iris$Petal.Length)
+title(xlab = "Petal length", main = "Dotchart of petal length")
+```
+
+## Bar Plot
+
+```{r}
+library(RColorBrewer)
+# to use predefined color schemes from this package
+```
+
+Let us now find pattern between type of car and its seating capacity. For this purpose, we will use bar chart or bar graph, which is a chart that presents grouped data with rectangular bars with lengths proportional to the values that they represent.
+
+```{r}
+table_a <- table(df$Type, df$Passengers)
+class(table_a)
+table_a
+```
+
+```{r}
+barplot(table_a, legend = rownames(table_a), col = brewer.pal(6, "Blues"))
+title(main = "Number of passengers per car type", xlab = "Number of passenegrs")
+```
+
+Color schemes like shown in the figure(continuous shades) should be used when we are representing continuous values.
+
+##### So to represent discrete values using discrete color schemna 
+
+```{r}
+barplot(table_a, legend = rownames(table_a), col = brewer.pal(6, "Pastel1"))
+title(main = "Number of passengers per car type", xlab = "Number of passenegrs")
+```
+
+We observe that with the exception of few, most compact and mid size cars can accommodate 5 people. Here the height signifies the count of different car types in that passenger range.
+
+### Stacked bargraph in ggplot2
+
+ `new_df <- data.frame(table(df$Type, df$Passengers))` when used this data frame is not coming properly so going with table
+
+```{r}
+table_a
+```
+
+```{r}
+new_df <- data.frame(table_a)
+head(new_df)
+```
+
+
+
+```{r}
+colnames(new_df) <- c("CarType", "NumberOfPassenegrs", "Count")
+head(new_df)
+```
+
+```{r}
+ggplot(data = new_df, aes(x = NumberOfPassenegrs, y = Count, fill = CarType)) +
+  geom_bar(stat = "identity")
+```
+
+
+***
+
+```{r}
+rm(list = ls())
+library(ggplot2)
+library(reshape2)
+```
+
+```{r}
+data(WorldPhones)
+df <- WorldPhones  # Is loaded as matrix change to data.frame
+df <- data.frame(df)
+
+df$Years <- as.numeric(rownames(df))
+df_melt <- melt(df, id = c("Years"))
+colnames(df_melt) <- c("Years", "Countries", "NoOfPhones")
+
+head(df_melt)
+```
+
+The graph below is wrong because of `stat = identity` and we had not summed up the values for different countries so need to use table(). 
+
+```{r}
+ggplot(data = df_melt, aes(x = Years, y = NoOfPhones, fill = Countries)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Wrong plot")
+```
+
+```{r}
+ta <- table(df_melt$Years, df_melt$Countries)
+ta
+```
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+df2 <- group_by(df_melt, Years, Countries)
+df2
+```
+
+
+#### wrong again
+
+```{r}
+ggplot(data = df2, aes(x = Years, y = NoOfPhones, fill = Countries)) +
+  geom_bar(stat = "identity")
+```
+
+
+#### try using table as in ilpce
+
+```{r}
+head(df, 10)
+```
+
+```{r}
+data(WorldPhones)
+df <- WorldPhones  # Is loaded as matrix change to data.frame
+df <- data.frame(df)
+
+df$Years <- rownames(df)  # changed the years to factors again
+df_melt <- melt(df, id = c("Years"))
+colnames(df_melt) <- c("Years", "Countries", "NoOfPhones")
+
+head(df_melt)
+```
+
+SO the error was i put the years as numeric but for bargraph it must be as factors
+
+```{r}
+ggplot(data = df_melt, aes(x = Years, y = NoOfPhones, fill = Countries)) +
+  geom_bar(stat = "identity")
+```
+
+##### OR
+
+```{r}
+library(RColorBrewer)
+barplot(t(WorldPhones),  col = brewer.pal(6, "Pastel1"))
+legend("topleft", legend = colnames(WorldPhones), 
+       col = brewer.pal(6, "Pastel1"), 
+       pch = 15, cex = 0.5)
+```
+
+***
+
+### Histogram
+
+```{r}
+rm(list = ls())
+library(MASS)
+data(Cars93)
+hist(Cars93$MPG.city, freq = T, breaks = seq(14, 50,2))
+```
+
+__freq__ if TRUE, the histogram is a representation of frequencies, else it would plot probability densities.
+
+```{r}
+hist(Cars93$MPG.city, freq = F)
+```
+
+
+If we want to draw a probability density plot, then using the density() and lines() we can overlay probability density curve also as seen in Probability Distribution course.
+
+ 
+```{r}
+
+plot(density(Cars93$MPG.city))
+lines(Cars93$MPG.city)
+```
+***
+
+## Stem and Leaf Chart
+
+```{r}
+stem(Cars93$MPG.city)
+```
+
+
+*** 
+### BOxplot
+
+```{r}
+ggplot() +
+  geom_boxplot(data = Cars93, aes(factor(0), Price)) +
+  facet_wrap(~Type, scales = "free") +
+  scale_x_discrete(breaks = NULL) +
+  xlab("") +
+  ggtitle("Price of cars according to type")
+```
+
+***
+
+## Pie chart
+
+```{r}
+ggplot() +
+  geom_bar(data = Cars93, aes(x = factor(1), fill = Cylinders), width = 1, position = "fill") +
+  xlab("") +
+  ylab("") +
+  coord_polar(theta = "y") +
+  facet_wrap(~Type) +
+  scale_fill_brewer(type = "qual", palette = "Pastel1") +
+  theme_light() +
+  ggtitle("Number of cars in each type according to number of cylinders")
+```
+
+***
+
+```{r}
+rm(list = ls())
+```
+
+```{r}
+library(ggplot2)
+dow_jones_index <- read.csv("dow_jones_index.data")
+head(dow_jones_index)
+```
+
+```{r}
+dow_jones_index <- subset(dow_jones_index, select = c("stock", "date", "percent_change_price", "percent_change_volume_over_last_wk"),
+                          subset = dow_jones_index$stock %in% c("BAC", "AXP"))
+
+dow_jones_index[, "date"] <- as.Date(dow_jones_index[, "date"], "%m/%d/%Y")
+head(dow_jones_index)
+```
+
+```{r}
+a <- ggplot() +
+  geom_bar(data = dow_jones_index, aes(x=date, y=percent_change_price, fill = stock), stat = "identity", position = position_dodge())
+
+a + ggtitle("Percentage change in stock price for AXP and BAC") +
+  xlab("time") + ylab("Percentage change in stock price")
+```
+
+***
+
+## Stock market scenario - Bar Chart and Line Chart
+
+```{r}
+colnames(dow_jones_index)
+```
+
+
+a <- ggplot() +
+  geom_bar(data = dow_jones_index, aes(x=date, y=percent_change_price, fill = stock), stat = "identity", position = position_dodge()) +
+  geom_line(aes(x = date, y = percent_change_volume_over_last_wk, col = stock))
+
+
+
+a + ggtitle("Percentage change in stock price for AXP and BAC") +
+  xlab("time") + ylab("Percentage change in stock price")
+
+***
+
+```{r}
+rm(list = ls())
+df <- data.frame(
+  group <- c("M", "F", "C"),
+  value <- c(25,25, 50)
+)
+
+ggplot(df, aes(x = "", y = value, fill = group)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start = 0)
+```
+
+***
+
+A.
+
+```{r}
+ggplot() + 
+  geom_point(data = iris, aes(x = Petal.Length, y = Petal.Width, col=Species, fill = Species), size =3) +
+  labs(fill = "Legend") + theme(text = element_text(size=16))
+  
+```
+
+B. Correct one
+
+```{r}
+ggplot() + 
+  geom_point(data = iris, aes(x = Petal.Length, y = Petal.Width, col=Species), size =3) +
+  labs(col = "Legend") + theme(text = element_text(size=16))
+```
+
+C.
+
+```{r}
+ggplot() + 
+  geom_point(data = iris, aes(x = Petal.Length, y = Petal.Width, col=Species, fill = Species), size =3) +
+  labs(col = "Legend") + theme(text = element_text(size=16))
+```
+
+D. Correct
+
+```{r}
+ggplot() + 
+  geom_point(data = iris, aes(x = Petal.Length, y = Petal.Width, col=Species, fill = Species), size =3) +
+  labs(col = "Legend", fill = "Legend") + theme(text = element_text(size=16))
+```
+
+	
+	
+	
