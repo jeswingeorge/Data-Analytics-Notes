@@ -10,18 +10,7 @@ df$Age[is.na(df$Age)] <- median(df$Age, na.rm = TRUE)
 df$Pclass <- ordered(df$Pclass, levels = c('1', '2', '3'))
 df$Survived <- factor(df$Survived)
 df$Embarked[df$Embarked == ''] <- 'S'   # Remove the empty char 
-```
-
-```{r}
-df$Age_class <- ''
-df$Age_class[df$Age <= 6] <- 'Infants'
-df$Age_class[df$Age <= 12] <- 'Children'
-df$Age_class[df$Age <= 18] <- 'Teenagers'
-df$Age_class[df$Age <= 35] <- 'Young'
-df$Age_class[df$Age <= 60] <- 'Middle-aged'
-df$Age_class[df$Age > 60] <- 'Old'
-
-df <- select(df, "Survived", "Pclass", "Sex", "Age","Embarked", "Age_class")
+df <- select(df, "Survived", "Pclass", "Sex", "Age", "Fare", "Embarked")
 ```
 
 
@@ -32,6 +21,19 @@ There are two types functions in ggplot2 for bar charts :
 
 - `geom_col` makes the heights of the bars to represent values in the data,  It uses stat_identity, it leaves the data as is.
 
+### Aesthetics
+
+`geom_bar` understands the following aesthetics:
+
+- x
+- y
+- alpha
+- color
+- fill
+- group
+- linetype
+- size
+
 ## Bargraph to show the number of passengers embarked from each port
 
 ```{r}
@@ -39,11 +41,11 @@ ggplot(data = df, aes(x = Embarked)) +
   geom_bar()
 ```
 
-## Bargraph to show the sum of age of people embarked from each port
+## Bargraph to show the port which had the paid the maximum total fare paid by its corresponding passenegers
 
 ```{r}
 ggplot(data = df, aes(x = Embarked)) +
-  geom_bar(aes(weight = Age))
+  geom_bar(aes(weight = Fare))
 ```
 
 ## Stacked Bar Plot
@@ -60,7 +62,8 @@ To change the order in which the multiple stacks are placed on the bar use
 
 ```{r}
 ggplot(data = df, aes(x = Embarked)) +
-  geom_bar(aes(fill = Pclass), position = position_stack(reverse = TRUE))
+  geom_bar(aes(fill = Pclass), position = position_stack(reverse = TRUE)) +
+  scale_fill_brewer(palette = "Pastel1") 
 ```
 
 ## Horizontal bargraph (Obtained by flipping the coordinates)
@@ -68,7 +71,9 @@ ggplot(data = df, aes(x = Embarked)) +
 ```{r}
 ggplot(data = df, aes(x = Embarked)) +
   geom_bar(aes(fill = Pclass), position = position_stack(reverse = TRUE)) +
-  coord_flip()
+  coord_flip() +
+  scale_fill_brewer(palette = "Pastel1") +
+  theme_minimal()
 ```
 
 To arrange the bar plots in ascending or descending order.
@@ -76,4 +81,19 @@ To arrange the bar plots in ascending or descending order.
 ```{r}
 
 ```
+
+## Grouped bar charts
+
+
+
+```{r}
+ggplot(data = df, aes(x = Embarked, fill = Survived)) +
+  geom_bar(position = "dodge")
+```
+
+It is important to use `position = "dodge"` otherwise it would result in a 
+stacked bar graph. `position = "dodge"`seperates the bar based on the __fill__ category.
+
+
+
 
