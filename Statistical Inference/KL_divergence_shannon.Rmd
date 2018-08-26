@@ -1,0 +1,78 @@
+------------------------------------------------------
+# Simpson's Paradox
+------------------------------------------------------
+
+```{r}
+df <- data.frame(c("Day 1", "Day 1", "Day 1", "Day 1", "Day 1",
+                   "Day 2", "Day 2", "Day 2", "Day 2", "Day 2"),
+                 c("T1", "T2", "T3", "T4", "T5", 
+                   "T1", "T2", "T3", "T4", "T5"),
+                 c("Bob", "John", "Bob", "Bob", "Bob", 
+                   "John", "John", "Bob", "John", "John"),
+                 c("Pending", "Pending", "Resolved", "Pending", "Pending",
+                   "Resolved", "Resolved", "Resolved", "Pending", "Resolved"));
+names(df) <- c("Day", "Ticket No.", "Assignee", "Status")
+df
+```
+
+
+ Overall Result
+```{r}
+table(df$Assignee, df$Status) 
+```
+
+ Inference - Overall, John is better than Bob
+
+ Day wise Result
+```{r}
+table(df$Assignee, df$Status, df$Day)
+```
+
+ Inference - 
+ Day 1 - Bob resolved at least 1 ticket. John has pending ticket. Hence, Bob is better.
+ Day 2 - Bob again resolved the ticket. John has pending ticket once again.  Hence, Bob is better.
+Day wise, Bob is better.
+
+Simpson's Paradox states that a trend appears in different group of data when seen individually but disappears when these groups are combined.
+
+
+------------------------------------------------------
+ Entropy
+------------------------------------------------------
+
+```{r}
+library(entropy)
+```
+
+
+Machine 1 entropy
+```{r}
+entropy.empirical(c(4, 4, 4, 4), unit = "log2")
+```
+
+
+Machine 2 entropy
+```{r}
+entropy.empirical(c(4, 2, 1, 1), unit = "log2")
+```
+
+
+entropy tends to be more when the probability of all the possible outcomes are close to each other.
+
+
+------------------------------------------------------
+# KL Divergence
+------------------------------------------------------
+ KL Divergence is the measure of difference between two probability distributions (P.D.).
+ KL divergence of P.D. Q with respect to P.D. P gives the measure of the 
+information lost by using P to approximate Q.
+
+##### http://ilpce/ce/Course/EXDA/page/169        # definition
+##### http://ilpce/ce/Course/EXDA/page/171        # example
+
+```{r}
+P <- rep(166, 6)                 
+Q <- c(91, 157, 275, 274, 117, 85)
+KL.empirical(P, Q, unit = "log2")
+```
+
