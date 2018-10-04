@@ -1,0 +1,197 @@
+
+```{r}
+library(dplyr)
+library(tidyverse) ## dplyr provides the join functions
+```
+
+References :
+- [R handbook for data science](http://r4ds.had.co.nz/relational-data.html)
+- [rpubs notes](https://rpubs.com/williamsurles/293454)
+- [2 table dplyr](https://dplyr.tidyverse.org/articles/two-table.html)
+
+---
+
+- To work with relational data you need verbs that work with pairs of tables. There are three families of verbs designed to work with relational data:
+
+__Mutating joins__, which add new variables to one data frame from matching observations in another.
+
+__Filtering joins__, which filter observations from one data frame based on whether or not they match an observation in the other table.
+
+__Set operations__, which treat observations as if they were set elements.
+
+Working with two small data frames, superheroes and publishers.
+
+```{r}
+name <- c("Magneto", "Storm", "Mystique", "Batman", "Joker", "Catwoman", "Hellboy")
+alignment <- c("bad", "good", "bad", "good", "bad", "bad", "good")
+gender <- c("male", "female", "female", "male", "male", "female", "male")
+publisher <- c("Marvel", "Marvel", "Marvel", "DC", "DC", "DC", "Dark Horse Comics")
+superheroes <- data.frame(name, alignment, gender, publisher)
+superheroes
+```
+
+```{r}
+publisher <- c("DC", "Marvel", "Image")
+yr_founded <- c(1934, 1939, 1992)
+publishers <- data.frame(publisher, yr_founded)
+publishers
+```
+
+
+```{r}
+name <- c("X-men", "The Dark Knight", "Superman", "Ironman")
+Studio <- c("Marvel", "DC", "DC", "Marvel")
+Movies <- data.frame(name, Studio)
+Movies
+```
+
+## Mutating joins 
+A mutating join allows you to combine variables from two tables. It first matches observations by their keys, then copies across variables from one table to the other.
+
+### 1. inner_join()
+inner_join(x, y): Return all rows from x where there are matching values in y, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned. This is a mutating join.
+
+##### when superheroes comes first
+
+```{r}
+inner_df <- inner_join(superheroes, publishers, by = c("publisher"))
+print(inner_df)
+```
+
+##### when publisher comes first
+if the name is same in both dataframes no need to use by. 
+
+```{r}
+inner_df <- inner_join(publishers, superheroes)
+print(inner_df)
+```
+
+### 2. left_join()
+left_join(x, y): Return all rows from x, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned. This is a mutating join.
+
+```{r}
+ljsp <- left_join(superheroes, publishers)
+ljsp
+```
+
+
+### 3. full_join()
+
+full_join(x, y): Return all rows and all columns from both x and y. Where there are not matching values, returns NA for the one missing. This is a mutating join.
+
+```{r}
+fjsp <- full_join(superheroes, publishers)
+fjsp
+```
+
+#### join on multiple columns or columns of different names
+
+```{r}
+d1 <- data_frame(
+  x = letters[1:3],
+  y = LETTERS[1:3],
+  a = rnorm(3)
+  )
+
+d1
+```
+
+```{r}
+d2 <- data_frame(
+  x2 = letters[3:1],
+  y2 = LETTERS[3:1],
+  b = rnorm(3)
+  )
+
+d2
+```
+
+```{r}
+left_join(d1, d2, by = c("x" = "x2", "y" = "y2"))
+```
+
+- Also, Thanks for this; also works when the columns in the data frames have the same name, e.g. `left_join(d1, d2, by = c("firstname" = "firstname", "lastname" = "lastname"))`
+
+- When the join columns are the same, you can also avoid the __=__: `left_join(d1, d2, by = c("firstname", "lastname"))`
+
+---
+---
+
+## filtering joins
+
+Filtering joins match observations in the same way as mutating joins, but affect the observations, not the variables. There are two types:
+- `semi_join(x, y)` keeps all observations in x that have a match in y.
+- `anti_join(x, y)` drops all observations in x that have a match in y.
+
+#### semi_join()
+semi_join(x, y): Return all rows from x where there are matching values in y, keeping just columns from x. A semi join differs from an inner join because an inner join will return one row of x for each matching row of y, where a semi join will never duplicate rows of x. This is a filtering join.
+
+```{r}
+sjsp <- semi_join(superheroes, publishers)
+sjsp
+```
+
+#### anti_join()
+anti_join(x, y): Return all rows from x where there are not matching values in y, keeping just columns from x. This is a filtering join.
+
+```{r}
+ajsp <- anti_join(superheroes, publishers)
+ajsp
+```
+
+```{r}
+ajps <- anti_join(publishers, superheroes)
+ajps
+```
+
+## Set operations
+
+The final type of two-table verb are the set operations. Generally, I use these the least frequently, but they are occasionally useful when you want to break a single complex filter into simpler pieces. All these operations work with a complete row, comparing the values of every variable. These expect the x and y inputs to have the same variables, and treat the observations like sets:
+
+- `intersect(x, y)`: return only observations in both x and y.
+- `union(x, y)`: return unique observations in x and y.
+- `setdiff(x, y)`: return observations in x, but not in y.
+
+```{r}
+df1 <- tribble(
+  ~x, ~y,
+   1,  1,
+   2,  1
+)
+df1
+```
+
+```{r}
+df2 <- tribble(
+  ~x, ~y,
+   1,  1,
+   1,  2
+)
+df2
+```
+
+#### using intersect
+
+```{r}
+intersect(df1, df2)
+```
+
+#### using union
+
+```{r}
+union(df1, df2)
+```
+
+Note that we get 3 rows, not 4
+
+
+#### setdiff
+
+```{r}
+setdiff(df1, df2)
+```
+
+```{r}
+setdiff(df2, df1)
+```
+

@@ -1,0 +1,113 @@
+
+```{r}
+suppressPackageStartupMessages(library(ggplot2))
+suppressMessages(library(dplyr))
+```
+
+```{r}
+df <- read.csv("titanic_train.csv", stringsAsFactors = FALSE)
+df$Age[is.na(df$Age)] <- median(df$Age, na.rm = TRUE)
+df$Pclass <- ordered(df$Pclass, levels = c('1', '2', '3'))
+df$Survived[df$Survived == 0] <- 'No'
+df$Survived[df$Survived == 1] <- 'Yes'
+df$Embarked[df$Embarked == ''] <- 'S'   # Remove the empty char 
+df <- select(df, "Survived", "Pclass", "Sex", "Age", "Fare", "Embarked")
+head(df)
+```
+
+
+# BarCharts
+
+There are two types of  functions in ggplot2 for bar charts : 
+- `geom_bar()` makes the height of the bar proportional to the number of cases in each group (or if the weight aesthetic is supplied, the sum of the weights). It uses stat_count (stat = "bin") by default, it counts the number of cases at each x position or in each group.
+
+- `geom_col()` or `geom_bar(stat = "identity")` makes the heights of the bars to represent values in the data,  It uses stat_identity, it leaves the data as is.
+
+### Aesthetics
+
+`geom_bar` understands the following aesthetics:
+
+- x
+- y
+- alpha
+- color
+- fill
+- group
+- linetype
+- size
+
+## Basic Bargraph based on the count in each group
+
+Bargraph to show the number of passengers embarked from each port
+
+```{r}
+ggplot(data = df, aes(x = Embarked)) +
+  geom_bar()
+```
+
+To arrange the bar plots in ascending or descending order.
+
+```{r}
+
+```
+
+
+## Bargraph to find sum of a quantitative variable for each group
+Bargraph to show the port which had the paid the maximum total fare paid by its corresponding passenegers.
+
+```{r}
+ggplot(data = df, aes(x = Embarked)) +
+  geom_bar(aes(weight = Fare))
+```
+
+## Stacked Bargraph
+
+Bar charts are automatically stacked when multiple bars are placed at the same location. The order of the fill is designed to match the legend.
+
+```{r}
+ggplot(data = df, aes(x = Embarked)) +
+  geom_bar(aes(fill = Pclass)) +
+  scale_fill_brewer(palette = "Pastel1")
+```
+
+To change the order in which the multiple stacks are placed on the bar use
+`position = position_stack(reverse = TRUE)`
+
+```{r}
+ggplot(data = df, aes(x = Embarked)) +
+  geom_bar(aes(fill = Pclass), position = position_stack(reverse = TRUE)) +
+  scale_fill_brewer(palette = "Pastel1") 
+```
+
+## Horizontal bargraph (Obtained by flipping the coordinates)
+
+These type of bargraphs are used to avoid congestion in the horizontal axis and to improve readability. Congestion occurs when there are many groups included
+in the horizontal axis or the names of the groups are lengthy
+
+```{r}
+ggplot(data = df, aes(x = Embarked)) +
+  geom_bar(aes(fill = Pclass), position = position_stack(reverse = TRUE)) +
+  coord_flip() +
+  scale_fill_brewer(palette = "Pastel1") +
+  theme_minimal()
+```
+
+
+## Grouped bar charts
+
+```{r}
+ggplot(data = df, aes(x = Embarked, fill = Survived)) +
+  geom_bar(position = "dodge")
+```
+
+It is important to use `position = "dodge"` otherwise it would result in a stacked bar graph. `position = "dodge"`seperates the bar based on the __fill__ category.
+
+
+To arrange the bar plots in ascending or descending order.
+
+```{r}
+
+```
+
+
+
