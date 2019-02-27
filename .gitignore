@@ -24,6 +24,7 @@ all_alpha_08.xls
 *.csv
 *.tsv
 *.zip
+*.xlsx
 rt_html
 *.zip
 ebert_reviews
