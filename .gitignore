@@ -31,3 +31,4 @@ ebert_reviews
 *.tsv
 et_the_extraterrestrial.html
 example-job-posting.jpg
+.DS_Store
