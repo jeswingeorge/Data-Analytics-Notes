@@ -60,7 +60,22 @@ test_set
 ```
 
 
+## 4. Feature scaling
 
+```{r}
+str(dataset)
+```
+
+
+```{r}
+training_set[,2:3] <- scale(training_set[,2:3])
+training_set
+```
+
+```{r}
+test_set[,2:3] <- scale(test_set[,2:3])
+test_set
+```
 
 
 
