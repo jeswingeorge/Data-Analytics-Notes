@@ -21,7 +21,6 @@ winequality-white.csv
 winequality_edited.csv
 all_alpha_18.xlsx
 all_alpha_08.xls
-*.csv
 *.tsv
 *.zip
 *.xlsx
