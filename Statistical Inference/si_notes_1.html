@@ -179,20 +179,19 @@ population_var_lower</code></pre>
 population_var_upper</code></pre>
 <pre><code>## [1] 6482.861</code></pre>
 <p>Hence, obtained the interval range of the populatuion variance.</p>
-<p>===========================================================================================</p>
+<hr />
 <p>According to the surveying agency the confidence interval of population mean is (408 to 417). The Govt. wants to verify this claim.</p>
-</div>
-<div id="hypothesis-test" class="section level2">
-<h2>HYPOTHESIS TEST</h2>
+<div id="hypothesis-test" class="section level3">
+<h3>HYPOTHESIS TEST</h3>
 <p>Q1. To validate the estimation of the surveying agency that the mean mark scored by all the students in surprise test is 413 with the confidence interval as (408, 417), the govt. has picked up 100 students from the country. The mean mark scored in the surprise test by these 100 students was found to be 403 with a standard deviation of 75.</p>
 <p>(Population sd is not known)</p>
-<pre class="r"><code>rm(list = ls())
-mu0 &lt;- 413
+<pre class="r"><code>mu0 &lt;- 413
 n &lt;- 100 # sample size
 xbar &lt;- 403
 sample_sd &lt;- 75
 alpha &lt;- 0.05</code></pre>
-<p>H0 : The estimate given by the surveying agency is correct, i.e., the mean mark scored by all the students in the surprise test is 413. Ha : mean mark scored by all the students in surprise test is less than 413.</p>
+<p><strong>H0</strong> : The estimate given by the surveying agency is correct, i.e., the mean mark scored by all the students in the surprise test is 413.</p>
+<p><strong>Ha</strong> : mean mark scored by all the students in surprise test is less than 413.</p>
 <p>(One-tailed test)</p>
 <pre class="r"><code>se &lt;- sample_sd/sqrt(n)  # se is sample sd
 zcrit &lt;- (xbar - mu0)/se
@@ -205,88 +204,55 @@ p_value</code></pre>
 <pre class="r"><code>p_value &gt; alpha</code></pre>
 <pre><code>## [1] TRUE</code></pre>
 <p>As the P value &gt; significance level, Null hypothesis can NOT be rejected i.e. based on the performance of selected 100 students, it can NOT be concluded that the surveying agency’s estimation are not valid.</p>
-<table>
-<colgroup>
-<col width="100%"></col>
-</colgroup>
-<tbody>
-<tr class="odd">
-<td align="left">Q2. Consider the average weight of Penguins found in an Antarctica last year was 16.3 kg. In a sample of 35 penguins same time this year in the same colony, the mean penguin weight is 15.7 kg. Assume the population standard deviation is 2.7 kg. At .05 significance level, does the current year’s mean of penguin weight differ from last year?</td>
-</tr>
-<tr class="even">
-<td align="left">(Population sd is known)</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>r rm(list = ls()) mu0 &lt;- 16.3 n &lt;- 35   # sample size alpha &lt;- 0.05 xbar &lt;- 15.7 sigma &lt;- 2.7</code></td>
-</tr>
-<tr class="even">
-<td align="left"><code>r se &lt;- sigma/sqrt(n) zcrit &lt;- (xbar - mu0)/se zcrit</code></td>
-</tr>
-<tr class="odd">
-<td align="left"><code>## [1] -1.314684</code></td>
-</tr>
-<tr class="even">
-<td align="left">The Z statistic is -1.314684 Compute the critical values at .05 significance level</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>r z.half.alpha &lt;- qnorm(1 - alpha/2) c(-z.half.alpha, z.half.alpha)</code></td>
-</tr>
-<tr class="even">
-<td align="left"><code>## [1] -1.959964  1.959964</code></td>
-</tr>
-<tr class="odd">
-<td align="left">The test statistic -1.314684 lies between the critical values -1.9600 and 1.9600. At 0.05 significance level, we can say that that the mean penguin weight does not differ from last year, that is , we do not reject the null hypothesis.</td>
-</tr>
-<tr class="even">
-<td align="left">=======================================================================================</td>
-</tr>
-<tr class="odd">
-<td align="left">which of these schools is performing better the agency</td>
-</tr>
-<tr class="even">
-<td align="left"><code>r df &lt;- read.csv(&quot;students_mark.csv&quot;, stringsAsFactors = FALSE) head(df)</code></td>
-</tr>
-<tr class="odd">
-<td align="left"><code>##   studentID stateID SchoolID Mark ## 1      1000     ST1    ST1S1  467 ## 2      1001     ST1    ST1S1  366 ## 3      1002     ST1    ST1S1  412 ## 4      1003     ST1    ST1S1  532 ## 5      1004     ST1    ST1S1  474 ## 6      1005     ST1    ST1S1  293</code></td>
-</tr>
-<tr class="even">
-<td align="left"><code>r school1 &lt;- subset(df, SchoolID == &quot;ST1S1&quot;, select = Mark) school2 &lt;- subset(df, SchoolID == &quot;ST1S3&quot;, select = Mark) n1 &lt;- nrow(school1) n2 &lt;- nrow(school2)</code></td>
-</tr>
-<tr class="odd">
-<td align="left">The mean and standard deviation in mark was calculated for the schools</td>
-</tr>
-<tr class="even">
-<td align="left"><code>r mean_school1 &lt;- mean(school1$Mark) mean_school2 &lt;- mean(school2$Mark) sd_school1 &lt;- sd(school1$Mark) sd_school2 &lt;- sd(school2$Mark)</code></td>
-</tr>
-<tr class="odd">
-<td align="left">in order to conclude which of these schools is performing better the agency has to estimate the difference between the population means of both the schools.</td>
-</tr>
-<tr class="even">
-<td align="left">Point estimate of difference between two population means: As sample mean is the unbiased estimator of population mean, the difference between two sample means can be used to estimate the difference between the population means.</td>
-</tr>
-<tr class="odd">
-<td align="left"><code>r population_mean_diff &lt;- mean_school1 - mean_school2 population_mean_diff</code></td>
-</tr>
-<tr class="even">
-<td align="left"><code>## [1] 28.25</code></td>
-</tr>
-<tr class="odd">
-<td align="left">mean of sampling distribution of difference in sample mean will be at 28.25</td>
-</tr>
-<tr class="even">
-<td align="left">Interval estimate of difference between two population means</td>
-</tr>
-<tr class="odd">
-<td align="left">in order to find the confidence interval of difference between two population means with 95% confidence level, the agency has to plot the sampling distribution of difference in sample means first and then identify the two points on the sampling distribution curve that enclose 95% of the total area under the curve.</td>
-</tr>
-<tr class="even">
-<td align="left">ESTIMATING SE IN 2 SAMPLE MEANS</td>
-</tr>
-</tbody>
-</table>
+<p>Q2. Consider the average weight of Penguins found in an Antarctica last year was 16.3 kg. In a sample of 35 penguins same time this year in the same colony, the mean penguin weight is 15.7 kg. Assume the population standard deviation is 2.7 kg. At .05 significance level, does the current year’s mean of penguin weight differ from last year?</p>
+<p>(Population sd is known)</p>
+<pre class="r"><code>mu0 &lt;- 16.3
+n &lt;- 35   # sample size
+alpha &lt;- 0.05
+xbar &lt;- 15.7
+sigma &lt;- 2.7</code></pre>
+<pre class="r"><code>se &lt;- sigma/sqrt(n)
+zcrit &lt;- (xbar - mu0)/se
+zcrit</code></pre>
+<pre><code>## [1] -1.314684</code></pre>
+<p>The Z statistic is -1.314684 Compute the critical values at .05 significance level</p>
+<pre class="r"><code>z.half.alpha &lt;- qnorm(1 - alpha/2)
+c(-z.half.alpha, z.half.alpha)</code></pre>
+<pre><code>## [1] -1.959964  1.959964</code></pre>
+<p>The test statistic -1.314684 lies between the critical values -1.9600 and 1.9600. At 0.05 significance level, we can say that that the mean penguin weight does not differ from last year, that is , we do not reject the null hypothesis.</p>
+</div>
+</div>
+<div id="which-of-these-schools-is-performing-better-the-agency" class="section level2">
+<h2>which of these schools is performing better the agency</h2>
+<pre class="r"><code>df &lt;- read.csv(&quot;students_mark.csv&quot;, stringsAsFactors = FALSE)
+head(df)</code></pre>
+<pre><code>##   studentID stateID SchoolID Mark
+## 1      1000     ST1    ST1S1  467
+## 2      1001     ST1    ST1S1  366
+## 3      1002     ST1    ST1S1  412
+## 4      1003     ST1    ST1S1  532
+## 5      1004     ST1    ST1S1  474
+## 6      1005     ST1    ST1S1  293</code></pre>
+<pre class="r"><code>school1 &lt;- subset(df, SchoolID == &quot;ST1S1&quot;, select = Mark)
+school2 &lt;- subset(df, SchoolID == &quot;ST1S3&quot;, select = Mark)
+n1 &lt;- nrow(school1)
+n2 &lt;- nrow(school2)</code></pre>
+<p>The mean and standard deviation in mark was calculated for the schools</p>
+<pre class="r"><code>mean_school1 &lt;- mean(school1$Mark)
+mean_school2 &lt;- mean(school2$Mark)
+sd_school1 &lt;- sd(school1$Mark)
+sd_school2 &lt;- sd(school2$Mark)</code></pre>
+<p>in order to conclude which of these schools is performing better the agency has to estimate the difference between the population means of both the schools.</p>
+<p>Point estimate of difference between two population means: As sample mean is the unbiased estimator of population mean, the difference between two sample means can be used to estimate the difference between the population means.</p>
+<pre class="r"><code>population_mean_diff &lt;- mean_school1 - mean_school2
+population_mean_diff</code></pre>
+<pre><code>## [1] 28.25</code></pre>
+<p>mean of sampling distribution of difference in sample mean will be at 28.25</p>
+<p>Interval estimate of difference between two population means</p>
+<p>in order to find the confidence interval of difference between two population means with 95% confidence level, the agency has to plot the sampling distribution of difference in sample means first and then identify the two points on the sampling distribution curve that enclose 95% of the total area under the curve.</p>
+<p>ESTIMATING SE IN 2 SAMPLE MEANS *** - When the population standard deviations are unknown we need to follow the steps given below to estimate the standard error.</p>
 <ul>
-<li><p>When the population standard deviations are unknown we need to follow the steps given below to estimate the standard error.</p></li>
-<li><p>We need to compare the variances of both the samples.</p></li>
+<li>We need to compare the variances of both the samples.</li>
 </ul>
 <pre class="r"><code>var_school1 &lt;- var(school1$Mark)
 var_school2 &lt;- var(school2$Mark)
