@@ -24,7 +24,7 @@ and also create predictive models using machine learning. Azure Databricks also 
 
 The following illustration shows the placement of Databricks in the Azure topology.
 
-[](img1.PNG)
+![](img1.PNG)
 
 Datascientists, engineers and other LOB folks can directly interact with Azure Databricks. Azure Databricks is one single plaform
 where storage, processing, ETL and visualization can be done.
@@ -80,7 +80,7 @@ Now that you understand what Spark is, you will now explore the Spark ecosystem.
 
 The following diagram shows the Spark ecosystem.
 
-[](img2.PNG)
+![](img2.PNG)
 
 __Spark SQL + DataFrames__: is used for working with structured data. A distributed collection of data that is organized into named columns is referred as DataFrames.
 
@@ -115,7 +115,7 @@ You will now look at several real life scenarios before looking into the archite
 
 Following diagram illustrates Databricks architecture
 
-[](img3.PNG)
+![](img3.PNG)
 
 - Databricks is a centralized managed service from the Azure control center where no additional set up is required.
 
@@ -242,7 +242,11 @@ As first step, you will now create Azure Databricks service.
 #### Create Azure Databricks
 
 
-Images
+![](db1.PNG)
+![](db2.PNG)
+![](db3.PNG)
+![](db4.PNG)
+![](db5.PNG)
 
 You are not allowed to create a cluster under the free credit trial. It will ask to pay as you go subscription.
 
