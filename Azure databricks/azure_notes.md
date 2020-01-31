@@ -242,11 +242,11 @@ As first step, you will now create Azure Databricks service.
 #### Create Azure Databricks
 
 
-![](db1.PNG)
-![](db2.PNG)
-![](db3.PNG)
-![](db4.PNG)
-![](db5.PNG)
+![](db1.jpg)
+![](db2.jpg)
+![](db3.jpg)
+![](db4.jpg)
+![](db5.jpg)
 
 You are not allowed to create a cluster under the free credit trial. It will ask to pay as you go subscription.
 
